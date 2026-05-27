@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "볼링 점수 기록기"
+title = "팀 유니크"
 version = "1.0.0"
 id = "artifacts/bowling-score"
 router = "path"

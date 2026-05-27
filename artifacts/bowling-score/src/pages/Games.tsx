@@ -40,6 +40,9 @@ export default function Games() {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [newDateValue, setNewDateValue] = useState("");
 
+  // Date group delete state
+  const [deletingDate, setDeletingDate] = useState<string | null>(null);
+
   const getMemberName = (id: string) =>
     members.find((m) => m.id === id)?.name ?? "알 수 없음";
 
@@ -170,12 +173,20 @@ export default function Games() {
                 <h2 className="text-sm font-semibold text-muted-foreground">
                   {formatDate(date)}
                 </h2>
+                <span className="text-xs text-muted-foreground">({grouped[date].length}명)</span>
                 <button
                   onClick={() => openDateEdit(date)}
                   className="text-muted-foreground hover:text-primary transition-colors p-0.5"
                   title="날짜 수정"
                 >
                   <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setDeletingDate(date)}
+                  className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                  title="날짜 전체 삭제"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
               <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
@@ -329,6 +340,38 @@ export default function Games() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingDate(null)}>취소</Button>
             <Button onClick={handleDateSave} className="bg-primary text-white">저장</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 날짜 일괄 삭제 확인 모달 */}
+      <Dialog open={!!deletingDate} onOpenChange={(open) => !open && setDeletingDate(null)}>
+        <DialogContent className="max-w-xs rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>날짜 기록 전체 삭제</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-foreground">
+              <strong>{deletingDate ? formatDate(deletingDate) : ""}</strong>의 기록을 모두 삭제할까요?
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {deletingDate ? (grouped[deletingDate]?.length ?? 0) : 0}명의 점수가 삭제되며 되돌릴 수 없습니다.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingDate(null)}>취소</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!deletingDate) return;
+                const ids = grouped[deletingDate]?.map((r) => r.id) ?? [];
+                ids.forEach((id) => removeRecord(id));
+                setDeletingDate(null);
+                toast({ title: `${ids.length}건의 기록이 삭제되었습니다.` });
+              }}
+            >
+              전체 삭제
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
