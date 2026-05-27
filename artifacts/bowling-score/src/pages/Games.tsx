@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Trash2, Pencil } from "lucide-react";
+import { Calendar, Trash2, Pencil, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useApp, GameRecord } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { scoreColor } from "@/lib/scoreUtils";
 
-const GAME_COUNT = 4;
+const GAME_COUNT = 5;
 
 function calcAvg(scores: (number | null)[]): number | null {
   const nums = scores.filter((s): s is number => s !== null);
@@ -21,36 +21,52 @@ function calcAvg(scores: (number | null)[]): number | null {
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
+type ColSort = "avg" | "name";
+type SortDir = "asc" | "desc";
+
 export default function Games() {
-  const { members, records, removeRecord, updateRecord } = useApp();
+  const { members, records, removeRecord, updateRecord, updateRecordsDate } = useApp();
   const { toast } = useToast();
+
   const [filterDate, setFilterDate] = useState("");
+  const [colSort, setColSort] = useState<ColSort>("avg");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Score edit state
   const [editingRecord, setEditingRecord] = useState<GameRecord | null>(null);
   const [editScores, setEditScores] = useState<string[]>([]);
+
+  // Date edit state
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [newDateValue, setNewDateValue] = useState("");
 
   const getMemberName = (id: string) =>
     members.find((m) => m.id === id)?.name ?? "알 수 없음";
 
   const withAvg = records.map((r) => ({ ...r, avg: calcAvg(r.scores) }));
-
   const filtered = withAvg.filter((r) => !filterDate || r.date === filterDate);
 
-  // Group by date, newest first
   const datesSorted = [...new Set(filtered.map((r) => r.date))].sort((a, b) =>
     b.localeCompare(a)
   );
 
+  const sortRows = (rows: typeof filtered) =>
+    [...rows].sort((a, b) => {
+      let diff = 0;
+      if (colSort === "avg") {
+        if (a.avg === null && b.avg === null) diff = 0;
+        else if (a.avg === null) diff = 1;
+        else if (b.avg === null) diff = -1;
+        else diff = b.avg - a.avg;
+      } else {
+        diff = getMemberName(a.memberId).localeCompare(getMemberName(b.memberId), "ko");
+      }
+      return sortDir === "desc" ? diff : -diff;
+    });
+
   const grouped = datesSorted.reduce(
     (acc, date) => {
-      // Within each date, sort by avg desc (highest first)
-      acc[date] = filtered
-        .filter((r) => r.date === date)
-        .sort((a, b) => {
-          if (a.avg === null && b.avg === null) return 0;
-          if (a.avg === null) return 1;
-          if (b.avg === null) return -1;
-          return b.avg - a.avg;
-        });
+      acc[date] = sortRows(filtered.filter((r) => r.date === date));
       return acc;
     },
     {} as Record<string, typeof filtered>
@@ -61,6 +77,7 @@ export default function Games() {
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
   };
 
+  // Score editing
   const openEdit = (record: GameRecord) => {
     setEditingRecord(record);
     setEditScores(record.scores.map((s) => (s === null ? "" : String(s))));
@@ -77,6 +94,20 @@ export default function Games() {
     toast({ title: "점수가 수정되었습니다!" });
   };
 
+  // Date editing
+  const openDateEdit = (date: string) => {
+    setEditingDate(date);
+    setNewDateValue(date);
+  };
+
+  const handleDateSave = () => {
+    if (!editingDate || !newDateValue) return;
+    if (editingDate === newDateValue) { setEditingDate(null); return; }
+    updateRecordsDate(editingDate, newDateValue);
+    setEditingDate(null);
+    toast({ title: "날짜가 수정되었습니다!" });
+  };
+
   const editAvg = (() => {
     const nums = editScores
       .map((s) => parseInt(s, 10))
@@ -86,8 +117,29 @@ export default function Games() {
     return avg % 1 === 0 ? String(avg) : avg.toFixed(1);
   })();
 
+  const handleColSort = (col: ColSort) => {
+    if (colSort === col) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    else { setColSort(col); setSortDir("desc"); }
+  };
+
+  const SortIcon = ({ col }: { col: ColSort }) => {
+    if (colSort !== col) return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
+    return (
+      <ArrowUp
+        className={`w-3.5 h-3.5 ml-1 text-primary inline transition-transform ${sortDir === "asc" ? "rotate-180" : ""}`}
+      />
+    );
+  };
+
+  const rankBadge = (rank: number) => {
+    if (rank === 0) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400 text-white text-xs font-bold">1</span>;
+    if (rank === 1) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-white text-xs font-bold">2</span>;
+    if (rank === 2) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-300 text-white text-xs font-bold">3</span>;
+    return <span className="text-muted-foreground text-xs">{rank + 1}</span>;
+  };
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Calendar className="w-6 h-6 text-orange-400" />
@@ -114,21 +166,42 @@ export default function Games() {
         <div className="space-y-6">
           {datesSorted.map((date) => (
             <div key={date}>
-              <h2 className="text-sm font-semibold text-muted-foreground mb-3">
-                {formatDate(date)}
-              </h2>
-              <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-sm font-semibold text-muted-foreground">
+                  {formatDate(date)}
+                </h2>
+                <button
+                  onClick={() => openDateEdit(date)}
+                  className="text-muted-foreground hover:text-primary transition-colors p-0.5"
+                  title="날짜 수정"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-border">
                     <tr>
-                      <th className="text-center px-3 py-2.5 font-medium text-muted-foreground w-10">순위</th>
-                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">이름</th>
-                      {[1, 2, 3, 4].map((g) => (
-                        <th key={g} className="text-center px-3 py-2.5 font-medium text-muted-foreground">
-                          {g}G
+                      <th className="text-center px-3 py-2.5 font-medium text-muted-foreground w-10">
+                        <button onClick={() => handleColSort("avg")} className="flex items-center mx-auto">
+                          순위 <SortIcon col="avg" />
+                        </button>
+                      </th>
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">
+                        <button onClick={() => handleColSort("name")} className="flex items-center">
+                          이름 <SortIcon col="name" />
+                        </button>
+                      </th>
+                      {Array.from({ length: GAME_COUNT }, (_, i) => (
+                        <th key={i} className="text-center px-2 py-2.5 font-medium text-muted-foreground">
+                          {i + 1}G
                         </th>
                       ))}
-                      <th className="text-center px-3 py-2.5 font-medium text-muted-foreground">평균</th>
+                      <th className="text-center px-3 py-2.5 font-medium text-muted-foreground">
+                        <button onClick={() => handleColSort("avg")} className="flex items-center mx-auto">
+                          평균 <SortIcon col="avg" />
+                        </button>
+                      </th>
                       <th className="w-20 px-2 py-2.5" />
                     </tr>
                   </thead>
@@ -140,19 +213,13 @@ export default function Games() {
                         className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-3 py-3 text-center">
-                          {rank === 0 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400 text-white text-xs font-bold">1</span>
-                          ) : rank === 1 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-white text-xs font-bold">2</span>
-                          ) : rank === 2 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-300 text-white text-xs font-bold">3</span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">{rank + 1}</span>
+                          {colSort === "avg" ? rankBadge(rank) : (
+                            <span className="text-muted-foreground text-xs">–</span>
                           )}
                         </td>
                         <td className="px-4 py-3 font-medium">{getMemberName(record.memberId)}</td>
                         {record.scores.map((score, idx) => (
-                          <td key={idx} className="px-3 py-3 text-center tabular-nums">
+                          <td key={idx} className="px-2 py-3 text-center tabular-nums">
                             {score !== null ? (
                               <span className={scoreColor(score) || "text-foreground"}>{score}</span>
                             ) : (
@@ -171,7 +238,7 @@ export default function Games() {
                               data-testid={`button-edit-record-${record.id}`}
                               onClick={() => openEdit(record)}
                               className="text-muted-foreground hover:text-primary transition-colors p-1"
-                              title="수정"
+                              title="점수 수정"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
@@ -195,6 +262,7 @@ export default function Games() {
         </div>
       )}
 
+      {/* 점수 수정 모달 */}
       <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
@@ -203,7 +271,7 @@ export default function Games() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-1.5">
               {Array.from({ length: GAME_COUNT }, (_, i) => (
                 <div key={i} className="space-y-1">
                   <p className="text-xs text-center text-muted-foreground font-medium">{i + 1}G</p>
@@ -219,7 +287,7 @@ export default function Games() {
                         prev.map((s, idx) => (idx === i ? e.target.value : s))
                       )
                     }
-                    className="text-center rounded-xl"
+                    className="text-center rounded-xl px-1"
                   />
                 </div>
               ))}
@@ -234,16 +302,33 @@ export default function Games() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingRecord(null)}>
-              취소
-            </Button>
-            <Button
-              data-testid="button-confirm-edit"
-              onClick={handleEditSave}
-              className="bg-primary text-white"
-            >
-              저장
-            </Button>
+            <Button variant="outline" onClick={() => setEditingRecord(null)}>취소</Button>
+            <Button data-testid="button-confirm-edit" onClick={handleEditSave} className="bg-primary text-white">저장</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 날짜 수정 모달 */}
+      <Dialog open={!!editingDate} onOpenChange={(open) => !open && setEditingDate(null)}>
+        <DialogContent className="max-w-xs rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>날짜 수정</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Input
+              type="date"
+              value={newDateValue}
+              onChange={(e) => setNewDateValue(e.target.value)}
+              className="rounded-xl"
+              data-testid="input-edit-date"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              해당 날짜의 모든 기록이 새 날짜로 이동합니다.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDate(null)}>취소</Button>
+            <Button onClick={handleDateSave} className="bg-primary text-white">저장</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { ClipboardEdit, Save } from "lucide-react";
+import { ClipboardEdit, Save, AlertCircle } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-const GAME_COUNT = 4;
+const GAME_COUNT = 5;
 
 type ScoreRow = { scores: string[] };
 
@@ -19,7 +19,7 @@ function calcAvg(scores: string[]): string {
 }
 
 export default function ScoreEntry() {
-  const { members, addRecords } = useApp();
+  const { members, records, addRecords } = useApp();
   const { toast } = useToast();
 
   const today = new Date().toISOString().split("T")[0];
@@ -43,9 +43,14 @@ export default function ScoreEntry() {
     }));
   };
 
+  const duplicateIds = new Set(
+    records.filter((r) => r.date === date).map((r) => r.memberId)
+  );
+
   const handleSave = () => {
     const toSave = members
       .map((m) => {
+        if (duplicateIds.has(m.id)) return null;
         const row = rows[m.id];
         if (!row) return null;
         const parsed = row.scores.map((s) => {
@@ -60,8 +65,18 @@ export default function ScoreEntry() {
           r !== null
       );
 
+    const skipped = members.filter((m) => duplicateIds.has(m.id));
+
     if (toSave.length === 0) {
-      toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
+      if (skipped.length > 0) {
+        toast({
+          title: "저장할 점수가 없습니다.",
+          description: `${skipped.map((m) => m.name).join(", ")}님은 해당 날짜에 이미 기록이 있습니다.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
+      }
       return;
     }
 
@@ -71,11 +86,16 @@ export default function ScoreEntry() {
         members.map((m) => [m.id, { scores: Array(GAME_COUNT).fill("") }])
       )
     );
-    toast({ title: `${toSave.length}명의 점수가 저장되었습니다!` });
+
+    const savedNames = toSave.map((r) => members.find((m) => m.id === r.memberId)?.name).filter(Boolean);
+    const msg = skipped.length > 0
+      ? `${savedNames.join(", ")}님 저장 완료. ${skipped.map((m) => m.name).join(", ")}님은 중복으로 건너뜀.`
+      : `${toSave.length}명의 점수가 저장되었습니다!`;
+    toast({ title: msg });
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <ClipboardEdit className="w-6 h-6 text-teal-500" />
         <h1 className="text-2xl font-bold text-foreground">점수 입력</h1>
@@ -105,6 +125,15 @@ export default function ScoreEntry() {
         </Button>
       </div>
 
+      {duplicateIds.size > 0 && (
+        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4 text-sm text-amber-700">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            <strong>{[...duplicateIds].map((id) => members.find((m) => m.id === id)?.name).filter(Boolean).join(", ")}</strong>님은 해당 날짜에 이미 기록이 있어 저장에서 제외됩니다.
+          </span>
+        </div>
+      )}
+
       {members.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <ClipboardEdit className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -112,13 +141,13 @@ export default function ScoreEntry() {
           <p className="text-sm mt-1">회원 관리 메뉴에서 회원을 먼저 추가해 주세요.</p>
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-border">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">이름</th>
                 {Array.from({ length: GAME_COUNT }, (_, i) => (
-                  <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-20">
+                  <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-[72px]">
                     {i + 1}G
                   </th>
                 ))}
@@ -127,13 +156,14 @@ export default function ScoreEntry() {
             </thead>
             <tbody>
               {members.map((member) => {
+                const isDuplicate = duplicateIds.has(member.id);
                 const row = rows[member.id] ?? { scores: Array(GAME_COUNT).fill("") };
                 const avg = calcAvg(row.scores);
                 return (
                   <tr
                     key={member.id}
                     data-testid={`entry-row-${member.id}`}
-                    className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
+                    className={`border-b border-border last:border-0 transition-colors ${isDuplicate ? "bg-gray-50 opacity-50" : "hover:bg-gray-50"}`}
                   >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
@@ -141,10 +171,13 @@ export default function ScoreEntry() {
                           {member.name.charAt(0)}
                         </div>
                         <span className="font-medium">{member.name}</span>
+                        {isDuplicate && (
+                          <span className="text-xs text-amber-500 font-medium">중복</span>
+                        )}
                       </div>
                     </td>
                     {row.scores.map((score, idx) => (
-                      <td key={idx} className="px-2 py-2 text-center w-20">
+                      <td key={idx} className="px-1.5 py-2 text-center w-[72px]">
                         <Input
                           data-testid={`input-${member.id}-game${idx + 1}`}
                           type="number"
@@ -152,8 +185,9 @@ export default function ScoreEntry() {
                           max={300}
                           placeholder="-"
                           value={score}
+                          disabled={isDuplicate}
                           onChange={(e) => handleScore(member.id, idx, e.target.value)}
-                          className="text-center rounded-lg h-8 px-1 w-16 mx-auto"
+                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto"
                         />
                       </td>
                     ))}

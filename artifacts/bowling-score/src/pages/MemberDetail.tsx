@@ -119,7 +119,7 @@ export default function MemberDetail({ id }: { id: string }) {
             <thead className="bg-gray-50 border-b border-border">
               <tr>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">날짜</th>
-                {[1, 2, 3, 4].map((g) => (
+                {[1, 2, 3, 4, 5].map((g) => (
                   <th key={g} className="text-center px-3 py-2.5 font-medium text-muted-foreground">
                     {g}G
                   </th>

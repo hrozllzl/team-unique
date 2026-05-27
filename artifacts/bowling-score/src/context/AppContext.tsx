@@ -20,6 +20,7 @@ interface AppContextType {
   addRecord: (record: Omit<GameRecord, "id">) => void;
   addRecords: (records: Omit<GameRecord, "id">[]) => void;
   updateRecord: (id: string, scores: (number | null)[]) => void;
+  updateRecordsDate: (oldDate: string, newDate: string) => void;
   removeRecord: (id: string) => void;
 }
 
@@ -84,13 +85,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const updateRecordsDate = useCallback((oldDate: string, newDate: string) => {
+    setRecords((prev) =>
+      prev.map((r) => (r.date === oldDate ? { ...r, date: newDate } : r))
+    );
+  }, []);
+
   const removeRecord = useCallback((id: string) => {
     setRecords((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
   return (
     <AppContext.Provider
-      value={{ members, records, addMember, removeMember, addRecord, addRecords, updateRecord, removeRecord }}
+      value={{ members, records, addMember, removeMember, addRecord, addRecords, updateRecord, updateRecordsDate, removeRecord }}
     >
       {children}
     </AppContext.Provider>
