@@ -1,7 +1,12 @@
 import { useLocation } from "wouter";
-import { Home } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+  children: React.ReactNode;
+  onLogout: () => void;
+}
+
+export default function Layout({ children, onLogout }: LayoutProps) {
   const [location, setLocation] = useLocation();
   const isHome = location === "/";
 
@@ -15,16 +20,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             팀 유니크
           </button>
-          {!isHome && (
+          <div className="flex items-center gap-3">
+            {!isHome && (
+              <button
+                data-testid="button-home"
+                onClick={() => setLocation("/")}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                홈으로
+              </button>
+            )}
             <button
-              data-testid="button-home"
-              onClick={() => setLocation("/")}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="button-logout"
+              onClick={onLogout}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors"
             >
-              <Home className="w-4 h-4" />
-              홈으로
+              <LogOut className="w-4 h-4" />
+              로그아웃
             </button>
-          )}
+          </div>
         </div>
       </header>
       <main>{children}</main>

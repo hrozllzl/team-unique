@@ -4,6 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { useApp } from "@/context/AppContext";
+import { scoreColor } from "@/lib/scoreUtils";
 
 function calcAvg(scores: (number | null)[]): number | null {
   const nums = scores.filter((s): s is number => s !== null);
@@ -139,10 +140,12 @@ export default function MemberDetail({ id }: { id: string }) {
                     <td className="px-4 py-3 text-muted-foreground text-xs">{dateLabel}</td>
                     {record.scores.map((score, idx) => (
                       <td key={idx} className="px-3 py-3 text-center">
-                        {score !== null ? score : <span className="text-muted-foreground">–</span>}
+                        {score !== null ? (
+                          <span className={scoreColor(score) || "text-foreground"}>{score}</span>
+                        ) : <span className="text-muted-foreground">–</span>}
                       </td>
                     ))}
-                    <td className="px-3 py-3 text-center font-semibold text-blue-500 tabular-nums w-16">
+                    <td className={`px-3 py-3 text-center font-semibold tabular-nums w-16 ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
                       {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
                     </td>
                   </tr>

@@ -25,9 +25,14 @@ function AuthGuard() {
     return <Login onLogin={() => setAuthed(true)} />;
   }
 
+  const handleLogout = () => {
+    sessionStorage.removeItem("bowling_auth");
+    setAuthed(false);
+  };
+
   return (
     <AppProvider>
-      <Layout>
+      <Layout onLogout={handleLogout}>
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/members" component={Members} />

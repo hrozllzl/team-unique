@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { useApp } from "@/context/AppContext";
+import { scoreColor } from "@/lib/scoreUtils";
 
 type SortKey = "rank" | "avg" | "best";
 type SortDir = "asc" | "desc";
@@ -168,14 +169,14 @@ export default function Stats() {
                     <td className="px-4 py-3.5 font-medium">{member.name}</td>
                     <td className="px-4 py-3.5 text-center tabular-nums">
                       {member.avg !== null ? (
-                        <span className="text-blue-500 font-semibold">{member.avg}</span>
+                        <span className={`font-semibold tabular-nums ${scoreColor(member.avg) || "text-blue-500"}`}>{member.avg}</span>
                       ) : (
                         <span className="text-muted-foreground">–</span>
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-center tabular-nums">
                       {member.best !== null ? (
-                        <span className="font-medium">{member.best}</span>
+                        <span className={`font-medium tabular-nums ${scoreColor(member.best)}`}>{member.best}</span>
                       ) : (
                         <span className="text-muted-foreground">–</span>
                       )}
