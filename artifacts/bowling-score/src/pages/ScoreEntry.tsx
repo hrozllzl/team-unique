@@ -1,55 +1,76 @@
-import { useState } from "react";
-import { ClipboardEdit } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ClipboardEdit, Save } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const GAME_COUNT = 4;
 
+type ScoreRow = { scores: string[] };
+
+function calcAvg(scores: string[]): number | null {
+  const nums = scores.map((s) => parseInt(s, 10)).filter((n) => !isNaN(n) && n >= 0 && n <= 300);
+  if (nums.length === 0) return null;
+  return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+}
+
 export default function ScoreEntry() {
-  const { members, addRecord } = useApp();
+  const { members, addRecords } = useApp();
   const { toast } = useToast();
 
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [scores, setScores] = useState<string[]>(Array(GAME_COUNT).fill(""));
 
-  const handleScoreChange = (idx: number, val: string) => {
-    setScores((prev) => prev.map((s, i) => (i === idx ? val : s)));
+  const [rows, setRows] = useState<Record<string, ScoreRow>>({});
+
+  useEffect(() => {
+    setRows(
+      Object.fromEntries(
+        members.map((m) => [m.id, { scores: Array(GAME_COUNT).fill("") }])
+      )
+    );
+  }, [members]);
+
+  const handleScore = (memberId: string, idx: number, val: string) => {
+    setRows((prev) => ({
+      ...prev,
+      [memberId]: {
+        scores: prev[memberId].scores.map((s, i) => (i === idx ? val : s)),
+      },
+    }));
   };
 
-  const handleSubmit = () => {
-    if (!selectedId) {
-      toast({ title: "회원을 선택해 주세요.", variant: "destructive" });
+  const handleSave = () => {
+    const toSave = members
+      .map((m) => {
+        const row = rows[m.id];
+        if (!row) return null;
+        const parsed = row.scores.map((s) => {
+          const n = parseInt(s, 10);
+          return s === "" || isNaN(n) || n < 0 || n > 300 ? null : n;
+        });
+        if (parsed.every((v) => v === null)) return null;
+        return { date, memberId: m.id, scores: parsed };
+      })
+      .filter((r): r is { date: string; memberId: string; scores: (number | null)[] } => r !== null);
+
+    if (toSave.length === 0) {
+      toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
       return;
     }
-    const parsed = scores.map((s) => {
-      const n = parseInt(s, 10);
-      if (s === "" || isNaN(n) || n < 0 || n > 300) return null;
-      return n;
-    });
-    const hasAny = parsed.some((v) => v !== null);
-    if (!hasAny) {
-      toast({ title: "1게임 이상 점수를 입력해 주세요.", variant: "destructive" });
-      return;
-    }
-    addRecord({ date, memberId: selectedId, scores: parsed });
-    setScores(Array(GAME_COUNT).fill(""));
-    setSelectedId("");
-    toast({ title: "점수가 저장되었습니다!" });
+
+    addRecords(toSave);
+    setRows(
+      Object.fromEntries(
+        members.map((m) => [m.id, { scores: Array(GAME_COUNT).fill("") }])
+      )
+    );
+    toast({ title: `${toSave.length}명의 점수가 저장되었습니다!` });
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <ClipboardEdit className="w-6 h-6 text-teal-500" />
         <h1 className="text-2xl font-bold text-foreground">점수 입력</h1>
@@ -57,73 +78,94 @@ export default function ScoreEntry() {
 
       <div className="border-b border-border mb-6" />
 
-      <div className="bg-white border border-border rounded-2xl shadow-sm p-6 space-y-5">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">날짜</label>
+      <div className="flex items-center justify-between mb-4 gap-4">
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-foreground whitespace-nowrap">날짜</label>
           <Input
             data-testid="input-date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl"
+            className="rounded-xl w-44"
           />
         </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">회원 선택</label>
-          {members.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">
-              회원 관리에서 먼저 회원을 추가해 주세요.
-            </p>
-          ) : (
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger data-testid="select-member" className="rounded-xl">
-                <SelectValue placeholder="회원을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">게임별 점수</label>
-          <div className="grid grid-cols-4 gap-3">
-            {Array.from({ length: GAME_COUNT }, (_, i) => (
-              <div key={i} className="space-y-1">
-                <p className="text-xs text-center text-muted-foreground font-medium">
-                  {i + 1}G
-                </p>
-                <Input
-                  data-testid={`input-score-game${i + 1}`}
-                  type="number"
-                  min={0}
-                  max={300}
-                  placeholder="-"
-                  value={scores[i]}
-                  onChange={(e) => handleScoreChange(i, e.target.value)}
-                  className="text-center rounded-xl"
-                />
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">0 ~ 300점 · 비워두면 미입력으로 처리됩니다</p>
-        </div>
-
         <Button
-          data-testid="button-save-score"
-          onClick={handleSubmit}
-          className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl"
+          data-testid="button-save-all"
+          onClick={handleSave}
           disabled={members.length === 0}
+          className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl gap-1.5"
         >
-          저장
+          <Save className="w-4 h-4" />
+          전체 저장
         </Button>
       </div>
+
+      {members.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <ClipboardEdit className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>등록된 회원이 없습니다.</p>
+          <p className="text-sm mt-1">회원 관리 메뉴에서 회원을 먼저 추가해 주세요.</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-border">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">이름</th>
+                {Array.from({ length: GAME_COUNT }, (_, i) => (
+                  <th key={i} className="text-center px-3 py-3 font-medium text-muted-foreground">
+                    {i + 1}G
+                  </th>
+                ))}
+                <th className="text-center px-3 py-3 font-medium text-muted-foreground">평균</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => {
+                const row = rows[member.id] ?? { scores: Array(GAME_COUNT).fill("") };
+                const avg = calcAvg(row.scores);
+                return (
+                  <tr
+                    key={member.id}
+                    data-testid={`entry-row-${member.id}`}
+                    className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-semibold text-xs shrink-0">
+                          {member.name.charAt(0)}
+                        </div>
+                        <span className="font-medium">{member.name}</span>
+                      </div>
+                    </td>
+                    {row.scores.map((score, idx) => (
+                      <td key={idx} className="px-2 py-2 text-center">
+                        <Input
+                          data-testid={`input-${member.id}-game${idx + 1}`}
+                          type="number"
+                          min={0}
+                          max={300}
+                          placeholder="-"
+                          value={score}
+                          onChange={(e) => handleScore(member.id, idx, e.target.value)}
+                          className="text-center rounded-lg h-8 px-1 w-16 mx-auto"
+                        />
+                      </td>
+                    ))}
+                    <td className="px-3 py-2.5 text-center font-semibold">
+                      {avg !== null ? (
+                        <span className="text-teal-600">{avg}</span>
+                      ) : (
+                        <span className="text-muted-foreground">–</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

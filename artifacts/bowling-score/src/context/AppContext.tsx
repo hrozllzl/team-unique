@@ -18,6 +18,8 @@ interface AppContextType {
   addMember: (name: string) => void;
   removeMember: (id: string) => void;
   addRecord: (record: Omit<GameRecord, "id">) => void;
+  addRecords: (records: Omit<GameRecord, "id">[]) => void;
+  updateRecord: (id: string, scores: (number | null)[]) => void;
   removeRecord: (id: string) => void;
 }
 
@@ -69,13 +71,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setRecords((prev) => [...prev, { ...record, id: crypto.randomUUID() }]);
   }, []);
 
+  const addRecords = useCallback((newRecords: Omit<GameRecord, "id">[]) => {
+    setRecords((prev) => [
+      ...prev,
+      ...newRecords.map((r) => ({ ...r, id: crypto.randomUUID() })),
+    ]);
+  }, []);
+
+  const updateRecord = useCallback((id: string, scores: (number | null)[]) => {
+    setRecords((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, scores } : r))
+    );
+  }, []);
+
   const removeRecord = useCallback((id: string) => {
     setRecords((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
   return (
     <AppContext.Provider
-      value={{ members, records, addMember, removeMember, addRecord, removeRecord }}
+      value={{ members, records, addMember, removeMember, addRecord, addRecords, updateRecord, removeRecord }}
     >
       {children}
     </AppContext.Provider>

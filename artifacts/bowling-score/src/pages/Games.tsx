@@ -1,10 +1,31 @@
 import { useState } from "react";
-import { Calendar, Trash2 } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { Calendar, Trash2, Pencil } from "lucide-react";
+import { useApp, GameRecord } from "@/context/AppContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+
+const GAME_COUNT = 4;
+
+function calcAvg(scores: (number | null)[]): number | null {
+  const nums = scores.filter((s): s is number => s !== null);
+  if (nums.length === 0) return null;
+  return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+}
 
 export default function Games() {
-  const { members, records, removeRecord } = useApp();
+  const { members, records, removeRecord, updateRecord } = useApp();
+  const { toast } = useToast();
   const [filterDate, setFilterDate] = useState("");
+  const [editingRecord, setEditingRecord] = useState<GameRecord | null>(null);
+  const [editScores, setEditScores] = useState<string[]>([]);
 
   const getMemberName = (id: string) => members.find((m) => m.id === id)?.name ?? "알 수 없음";
 
@@ -21,6 +42,22 @@ export default function Games() {
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + "T00:00:00");
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+  };
+
+  const openEdit = (record: GameRecord) => {
+    setEditingRecord(record);
+    setEditScores(record.scores.map((s) => (s === null ? "" : String(s))));
+  };
+
+  const handleEditSave = () => {
+    if (!editingRecord) return;
+    const parsed = editScores.map((s) => {
+      const n = parseInt(s, 10);
+      return s === "" || isNaN(n) || n < 0 || n > 300 ? null : n;
+    });
+    updateRecord(editingRecord.id, parsed);
+    setEditingRecord(null);
+    toast({ title: "점수가 수정되었습니다!" });
   };
 
   return (
@@ -65,16 +102,12 @@ export default function Games() {
                         </th>
                       ))}
                       <th className="text-center px-3 py-2.5 font-medium text-muted-foreground">평균</th>
-                      <th className="w-10" />
+                      <th className="w-20 px-2 py-2.5" />
                     </tr>
                   </thead>
                   <tbody>
                     {dayRecords.map((record) => {
-                      const validScores = record.scores.filter((s): s is number => s !== null);
-                      const avg =
-                        validScores.length > 0
-                          ? Math.round((validScores.reduce((a, b) => a + b, 0) / validScores.length) * 10) / 10
-                          : null;
+                      const avg = calcAvg(record.scores);
                       return (
                         <tr
                           key={record.id}
@@ -84,24 +117,31 @@ export default function Games() {
                           <td className="px-4 py-3 font-medium">{getMemberName(record.memberId)}</td>
                           {record.scores.map((score, idx) => (
                             <td key={idx} className="px-3 py-3 text-center">
-                              {score !== null ? (
-                                <span className="text-foreground">{score}</span>
-                              ) : (
-                                <span className="text-muted-foreground">–</span>
-                              )}
+                              {score !== null ? score : <span className="text-muted-foreground">–</span>}
                             </td>
                           ))}
                           <td className="px-3 py-3 text-center font-semibold text-blue-500">
                             {avg !== null ? avg : <span className="text-muted-foreground">–</span>}
                           </td>
                           <td className="px-2 py-3 text-right">
-                            <button
-                              data-testid={`button-remove-record-${record.id}`}
-                              onClick={() => removeRecord(record.id)}
-                              className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                data-testid={`button-edit-record-${record.id}`}
+                                onClick={() => openEdit(record)}
+                                className="text-muted-foreground hover:text-primary transition-colors p-1"
+                                title="수정"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                data-testid={`button-remove-record-${record.id}`}
+                                onClick={() => removeRecord(record.id)}
+                                className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                                title="삭제"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -113,6 +153,60 @@ export default function Games() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              점수 수정 — {editingRecord ? getMemberName(editingRecord.memberId) : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <div className="grid grid-cols-4 gap-2">
+              {Array.from({ length: GAME_COUNT }, (_, i) => (
+                <div key={i} className="space-y-1">
+                  <p className="text-xs text-center text-muted-foreground font-medium">{i + 1}G</p>
+                  <Input
+                    data-testid={`edit-score-game${i + 1}`}
+                    type="number"
+                    min={0}
+                    max={300}
+                    placeholder="-"
+                    value={editScores[i] ?? ""}
+                    onChange={(e) =>
+                      setEditScores((prev) => prev.map((s, idx) => (idx === i ? e.target.value : s)))
+                    }
+                    className="text-center rounded-xl"
+                  />
+                </div>
+              ))}
+            </div>
+            {editScores.length > 0 && (() => {
+              const avg = calcAvg(editScores.map((s) => {
+                const n = parseInt(s, 10);
+                return s === "" || isNaN(n) ? null : n;
+              }));
+              return avg !== null ? (
+                <p className="text-sm text-center text-muted-foreground">
+                  평균: <span className="font-semibold text-blue-500">{avg}점</span>
+                </p>
+              ) : null;
+            })()}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingRecord(null)}>
+              취소
+            </Button>
+            <Button
+              data-testid="button-confirm-edit"
+              onClick={handleEditSave}
+              className="bg-primary text-white"
+            >
+              저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
