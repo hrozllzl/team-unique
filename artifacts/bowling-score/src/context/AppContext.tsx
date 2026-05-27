@@ -95,9 +95,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setRecords((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  const sortedMembers = [...members].sort((a, b) =>
+    a.name.localeCompare(b.name, "ko")
+  );
+
   return (
     <AppContext.Provider
-      value={{ members, records, addMember, removeMember, addRecord, addRecords, updateRecord, updateRecordsDate, removeRecord }}
+      value={{ members: sortedMembers, records, addMember, removeMember, addRecord, addRecords, updateRecord, updateRecordsDate, removeRecord }}
     >
       {children}
     </AppContext.Provider>
