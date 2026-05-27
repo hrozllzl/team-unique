@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const MAX_GAMES = 5;
+const MAX_GAMES = 4;
 const MAX_SCORE = 300;
 
 interface Player {
@@ -44,7 +44,7 @@ function getScoreColor(score: number | "") {
 
 export default function BowlingScore() {
   const [players, setPlayers] = useState<Player[]>([
-    { id: 1, name: "플레이어 1", scores: ["", "", "", "", ""] },
+    { id: 1, name: "플레이어 1", scores: ["", "", "", ""] },
   ]);
   const [newPlayerName, setNewPlayerName] = useState("");
 
@@ -52,7 +52,7 @@ export default function BowlingScore() {
     const name = newPlayerName.trim() || `플레이어 ${players.length + 1}`;
     setPlayers((prev) => [
       ...prev,
-      { id: Date.now(), name, scores: ["", "", "", "", ""] },
+      { id: Date.now(), name, scores: ["", "", "", ""] },
     ]);
     setNewPlayerName("");
   }, [newPlayerName, players.length]);
@@ -109,7 +109,7 @@ export default function BowlingScore() {
             <h1 className="text-3xl font-bold text-foreground">볼링 점수 기록기</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            1게임~5게임까지 점수를 입력하면 평균을 자동으로 계산합니다
+            1게임~4게임까지 점수를 입력하면 평균을 자동으로 계산합니다
           </p>
         </div>
 
