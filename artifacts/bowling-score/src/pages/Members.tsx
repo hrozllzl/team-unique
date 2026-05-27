@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Users, Trash2, UserPlus } from "lucide-react";
+import { Users, Trash2, UserPlus, ChevronRight } from "lucide-react";
+import { useLocation } from "wouter";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
 
 export default function Members() {
   const { members, addMember, removeMember } = useApp();
+  const [, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
 
@@ -57,7 +59,8 @@ export default function Members() {
               <div
                 key={member.id}
                 data-testid={`member-row-${member.id}`}
-                className="flex items-center justify-between px-4 py-3.5 bg-white border border-border rounded-2xl shadow-sm"
+                className="flex items-center justify-between px-4 py-3.5 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group"
+                onClick={() => setLocation(`/members/${member.id}`)}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
@@ -65,13 +68,19 @@ export default function Members() {
                   </div>
                   <span className="font-medium text-foreground">{member.name}</span>
                 </div>
-                <button
-                  data-testid={`button-remove-${member.id}`}
-                  onClick={() => removeMember(member.id)}
-                  className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition-colors" />
+                  <button
+                    data-testid={`button-remove-${member.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeMember(member.id);
+                    }}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1 ml-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             );
           })}

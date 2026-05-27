@@ -9,10 +9,13 @@ const GAME_COUNT = 4;
 
 type ScoreRow = { scores: string[] };
 
-function calcAvg(scores: string[]): number | null {
-  const nums = scores.map((s) => parseInt(s, 10)).filter((n) => !isNaN(n) && n >= 0 && n <= 300);
-  if (nums.length === 0) return null;
-  return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+function calcAvg(scores: string[]): string {
+  const nums = scores
+    .map((s) => parseInt(s, 10))
+    .filter((n) => !isNaN(n) && n >= 0 && n <= 300);
+  if (nums.length === 0) return "–";
+  const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+  return avg % 1 === 0 ? String(avg) : avg.toFixed(1);
 }
 
 export default function ScoreEntry() {
@@ -21,7 +24,6 @@ export default function ScoreEntry() {
 
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
-
   const [rows, setRows] = useState<Record<string, ScoreRow>>({});
 
   useEffect(() => {
@@ -53,7 +55,10 @@ export default function ScoreEntry() {
         if (parsed.every((v) => v === null)) return null;
         return { date, memberId: m.id, scores: parsed };
       })
-      .filter((r): r is { date: string; memberId: string; scores: (number | null)[] } => r !== null);
+      .filter(
+        (r): r is { date: string; memberId: string; scores: (number | null)[] } =>
+          r !== null
+      );
 
     if (toSave.length === 0) {
       toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
@@ -113,11 +118,11 @@ export default function ScoreEntry() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">이름</th>
                 {Array.from({ length: GAME_COUNT }, (_, i) => (
-                  <th key={i} className="text-center px-3 py-3 font-medium text-muted-foreground">
+                  <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-20">
                     {i + 1}G
                   </th>
                 ))}
-                <th className="text-center px-3 py-3 font-medium text-muted-foreground">평균</th>
+                <th className="text-center px-3 py-3 font-medium text-muted-foreground w-20">평균</th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +144,7 @@ export default function ScoreEntry() {
                       </div>
                     </td>
                     {row.scores.map((score, idx) => (
-                      <td key={idx} className="px-2 py-2 text-center">
+                      <td key={idx} className="px-2 py-2 text-center w-20">
                         <Input
                           data-testid={`input-${member.id}-game${idx + 1}`}
                           type="number"
@@ -152,12 +157,14 @@ export default function ScoreEntry() {
                         />
                       </td>
                     ))}
-                    <td className="px-3 py-2.5 text-center font-semibold">
-                      {avg !== null ? (
-                        <span className="text-teal-600">{avg}</span>
-                      ) : (
-                        <span className="text-muted-foreground">–</span>
-                      )}
+                    <td className="px-3 py-2.5 text-center w-20">
+                      <span
+                        className={`tabular-nums font-semibold inline-block w-16 text-center ${
+                          avg === "–" ? "text-muted-foreground font-normal" : "text-teal-600"
+                        }`}
+                      >
+                        {avg}
+                      </span>
                     </td>
                   </tr>
                 );

@@ -48,11 +48,11 @@ export default function Home() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-center px-6 py-12">
-      <h1 className="text-3xl font-bold text-primary mb-2">팀 유니크</h1>
-      <p className="text-muted-foreground mb-10 text-sm">메뉴를 선택하세요</p>
+    <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-16 pb-10">
+      <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
+      <p className="text-muted-foreground mb-10 text-base">메뉴를 선택하세요</p>
 
-      <div className="grid grid-cols-2 gap-5 w-full max-w-xl">
+      <div className="grid grid-cols-2 gap-6 w-full max-w-2xl">
         {menus.map((menu) => {
           const Icon = menu.icon;
           return (
@@ -60,12 +60,12 @@ export default function Home() {
               key={menu.path}
               data-testid={`menu-${menu.path.replace("/", "")}`}
               onClick={() => setLocation(menu.path)}
-              className={`flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
+              className={`flex flex-col items-center justify-center gap-4 p-10 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
             >
-              <Icon className={`w-10 h-10 ${menu.iconColor}`} strokeWidth={1.5} />
+              <Icon className={`w-12 h-12 ${menu.iconColor}`} strokeWidth={1.5} />
               <div className="text-center">
-                <p className={`font-bold text-base ${menu.labelColor}`}>{menu.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{menu.desc}</p>
+                <p className={`font-bold text-lg ${menu.labelColor}`}>{menu.label}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{menu.desc}</p>
               </div>
             </button>
           );
