@@ -160,47 +160,37 @@ function MemberPersonalStats({ userName }: { userName: string }) {
           <div className="px-4 py-3 border-b border-border bg-gray-50">
             <p className="text-xs font-semibold text-muted-foreground">점수 기록</p>
           </div>
-          <div className="relative">
-            <div className="overflow-x-auto scrollbar-blue pb-1">
-              <table className="w-full text-sm table-fixed" style={{ minWidth: `${visibleCount * 60 + 160}px` }}>
-                <colgroup>
-                  <col className="w-28" />
-                  {Array.from({ length: visibleCount }).map((_, i) => <col key={i} />)}
-                  <col className="w-20" />
-                </colgroup>
-                <thead className="bg-gray-50 border-b border-border">
-                  <tr>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">날짜</th>
-                    {Array.from({ length: visibleCount }, (_, i) => (
-                      <th key={i} className="text-center px-2 py-2.5 font-medium text-muted-foreground">{i + 1}G</th>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-border">
+              <tr>
+                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">날짜</th>
+                {Array.from({ length: visibleCount }, (_, i) => (
+                  <th key={i} className="text-center px-2 py-2.5 font-medium text-muted-foreground">{i + 1}G</th>
+                ))}
+                <th className="text-center px-2 py-2.5 font-medium text-muted-foreground">평균</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...memberRecords].reverse().map((record) => {
+                const avg = calcAvg(record.scores);
+                return (
+                  <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{formatDateFull(record.date)}</td>
+                    {record.scores.slice(0, visibleCount).map((score, idx) => (
+                      <td key={idx} className="px-2 py-3 text-center">
+                        {score !== null ? (
+                          <span className={scoreColor(score) || "text-foreground"}>{score}</span>
+                        ) : <span className="text-muted-foreground">–</span>}
+                      </td>
                     ))}
-                    <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">평균</th>
+                    <td className={`px-2 py-3 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
+                      {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {[...memberRecords].reverse().map((record) => {
-                    const avg = calcAvg(record.scores);
-                    return (
-                      <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
-                        {record.scores.slice(0, visibleCount).map((score, idx) => (
-                          <td key={idx} className="px-2 py-3 text-center">
-                            {score !== null ? (
-                              <span className={scoreColor(score) || "text-foreground"}>{score}</span>
-                            ) : <span className="text-muted-foreground">–</span>}
-                          </td>
-                        ))}
-                        <td className={`px-4 py-3 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
-                          {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent rounded-r-lg" />
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
