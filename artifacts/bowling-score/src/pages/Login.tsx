@@ -150,7 +150,7 @@ export default function Login({ onLogin }: LoginProps) {
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">전화번호</label>
                 <Input
-                  placeholder="01012345678"
+                  placeholder="010-0000-0000"
                   value={signupData.phone}
                   onChange={(e) => setSignupData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
                   className="rounded-xl"
@@ -160,7 +160,7 @@ export default function Login({ onLogin }: LoginProps) {
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">생년월일</label>
                 <Input
-                  placeholder="19991231"
+                  placeholder="1900-01-01"
                   value={signupData.birthdate}
                   onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
                   className="rounded-xl"

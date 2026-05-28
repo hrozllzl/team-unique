@@ -243,7 +243,7 @@ export default function Members() {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">전화번호 (선택)</label>
               <Input
-                placeholder="01012345678"
+                placeholder="010-0000-0000"
                 value={newPhone}
                 onChange={(e) => setNewPhone(String(formatPhone(e.target.value)))}
                 className="rounded-xl"
@@ -253,7 +253,7 @@ export default function Members() {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">생년월일 (선택)</label>
               <Input
-                placeholder="19991231"
+                placeholder="1900-01-01"
                 value={newBirthdate}
                 onChange={(e) => setNewBirthdate(String(formatBirthdate(e.target.value)))}
                 className="rounded-xl"
@@ -280,7 +280,7 @@ export default function Members() {
             <div className="space-y-1.5">
               <label className="text-sm font-medium">전화번호</label>
               <Input
-                placeholder="01012345678"
+                placeholder="010-0000-0000"
                 value={editPhone}
                 onChange={(e) => setEditPhone(String(formatPhone(e.target.value)))}
                 className="rounded-xl"
@@ -291,7 +291,7 @@ export default function Members() {
               <label className="text-sm font-medium">생년월일</label>
               <input
                 type="text"
-                placeholder="19991231"
+                placeholder="1900-01-01"
                 value={editBirthdate}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditBirthdate(String(formatBirthdate(e.target.value)))}
                 inputMode="numeric"
