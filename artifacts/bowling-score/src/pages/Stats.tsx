@@ -296,10 +296,17 @@ export default function Stats() {
 
           <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
             <p className="text-xs text-muted-foreground px-4 pt-3 pb-1">회원 이름을 클릭하면 상세 기록을 볼 수 있어요</p>
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
+              <colgroup>
+                <col className="w-14" />
+                <col />
+                <col className="w-20" />
+                <col className="w-20" />
+                <col className="w-16" />
+              </colgroup>
               <thead className="bg-gray-50 border-b border-border">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground w-16">
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                     <button onClick={() => handleSort("rank")} className="flex items-center">
                       순위
                       <ArrowUp
@@ -312,16 +319,16 @@ export default function Stats() {
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">이름</th>
                   <th className="text-center px-4 py-3 font-medium text-muted-foreground">
                     <button onClick={() => handleSort("avg")} className="flex items-center mx-auto">
-                      평균 점수 <SortIcon k="avg" />
+                      평균 <SortIcon k="avg" />
                     </button>
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-muted-foreground">
                     <button onClick={() => handleSort("best")} className="flex items-center mx-auto">
-                      최고 점수 <SortIcon k="best" />
+                      최고 <SortIcon k="best" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">
-                    참여 게임
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
+                    참여
                   </th>
                 </tr>
               </thead>
