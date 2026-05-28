@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import { Users, ClipboardEdit, BarChart2, Calendar } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -6,6 +7,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useApp } from "@/context/AppContext";
 import { scoreColor, calcAvg } from "@/lib/scoreUtils";
+import { supabase } from "@/lib/supabase";
 
 const adminMenus = [
   {
@@ -194,13 +196,33 @@ export default function Home() {
   const { role, userName } = useAuth();
   const menus = role === "admin" ? adminMenus : memberMenus;
   const isMember = role === "member";
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (role === "admin") {
+      supabase
+        .from("members")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending")
+        .then(({ count }) => setPendingCount(count ?? 0));
+    }
+  }, [role]);
 
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-10 pb-10">
       {!isMember && (
         <>
           <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
-          <p className="text-muted-foreground mb-8 text-base">메뉴를 선택하세요</p>
+          {pendingCount > 0 ? (
+            <button
+              onClick={() => setLocation("/members")}
+              className="mb-8 px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors"
+            >
+              새로운 가입 요청이 <span className="font-bold">{pendingCount}건</span> 있습니다
+            </button>
+          ) : (
+            <p className="text-muted-foreground mb-8 text-sm">새로운 가입 요청이 없습니다</p>
+          )}
         </>
       )}
 
