@@ -13,40 +13,24 @@ const adminMenus = [
     icon: Users,
     label: "회원 관리",
     desc: "회원 추가 및 가입 승인",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    iconColor: "text-blue-500",
-    labelColor: "text-blue-600",
   },
   {
     path: "/score-entry",
     icon: ClipboardEdit,
     label: "점수 입력",
     desc: "날짜별 회원 점수 기록",
-    bg: "bg-teal-50",
-    border: "border-teal-200",
-    iconColor: "text-teal-500",
-    labelColor: "text-teal-600",
   },
   {
     path: "/stats",
     icon: BarChart2,
     label: "전체 통계 점수",
     desc: "회원별 평균 점수 및 순위",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    iconColor: "text-purple-500",
-    labelColor: "text-purple-600",
   },
   {
     path: "/games",
     icon: Calendar,
     label: "게임별 점수",
     desc: "날짜별 점수 기록 목록",
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
-    iconColor: "text-orange-400",
-    labelColor: "text-orange-500",
   },
 ];
 
@@ -250,12 +234,14 @@ export default function Home() {
               <button
                 key={menu.path}
                 onClick={() => setLocation(menu.path)}
-                className={`flex flex-col items-center justify-center gap-4 p-10 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
+                className="flex flex-col items-center justify-center gap-3 p-8 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
               >
-                <Icon className={`w-12 h-12 ${menu.iconColor}`} strokeWidth={1.5} />
+                <div className="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center">
+                  <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
+                </div>
                 <div className="text-center">
-                  <p className={`font-bold text-lg ${menu.labelColor}`}>{menu.label}</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">{menu.desc}</p>
+                  <p className="font-bold text-base text-gray-900">{menu.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{menu.desc}</p>
                 </div>
               </button>
             );

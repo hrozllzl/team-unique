@@ -97,7 +97,9 @@ export default function ScoreEntry() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
-        <ClipboardEdit className="w-6 h-6 text-teal-500" />
+        <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+          <ClipboardEdit className="w-5 h-5 text-blue-500" />
+        </div>
         <h1 className="text-2xl font-bold text-foreground">점수 입력</h1>
       </div>
 
