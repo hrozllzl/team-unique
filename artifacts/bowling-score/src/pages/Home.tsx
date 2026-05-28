@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useState, useEffect } from "react";
+
 import { Users, ClipboardEdit, BarChart2, Calendar } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -7,7 +7,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useApp } from "@/context/AppContext";
 import { scoreColor, calcAvg } from "@/lib/scoreUtils";
-import { supabase } from "@/lib/supabase";
 
 const adminMenus = [
   {
@@ -194,19 +193,10 @@ function MemberPersonalStats({ userName }: { userName: string }) {
 export default function Home() {
   const [, setLocation] = useLocation();
   const { role, userName } = useAuth();
+  const { userAccounts } = useApp();
   const menus = role === "admin" ? adminMenus : memberMenus;
   const isMember = role === "member";
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    if (role === "admin") {
-      supabase
-        .from("members")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending")
-        .then(({ count }) => setPendingCount(count ?? 0));
-    }
-  }, [role]);
+  const pendingCount = userAccounts.filter((u) => u.status === "pending").length;
 
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-10 pb-10">
