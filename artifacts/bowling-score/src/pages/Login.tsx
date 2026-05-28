@@ -88,8 +88,8 @@ export default function Login({ onLogin }: LoginProps) {
   const gradientBtn = "w-full text-white font-semibold rounded-full py-3 text-base transition-opacity hover:opacity-90 disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 -mt-16">
-      <div className="w-full max-w-sm">
+    <div className="min-h-[100dvh] bg-white flex flex-col items-center justify-center px-6">
+      <div className="w-full max-w-sm -mt-10">
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
           <p className="text-gray-400 text-sm mt-1 mb-4">볼링 점수 관리 시스템</p>
@@ -169,7 +169,7 @@ export default function Login({ onLogin }: LoginProps) {
             <div className="pt-1">
               <button
                 type="submit"
-                disabled={signupLoading}
+                disabled={signupLoading || !signupData.username || !signupData.password || !signupData.confirmPw || !signupData.name || !signupData.phone || !signupData.birthdate}
                 className={gradientBtn}
                 style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
               >
