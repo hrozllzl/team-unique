@@ -74,7 +74,7 @@ export default function Login({ onLogin }: LoginProps) {
     setSignupLoading(true);
     const { error } = await supabase.from("user_accounts").insert({
       username, password, name, phone,
-      birthdate: isLunar ? `음력 ${birthdate}` : birthdate,
+      birthdate: isLunar ? `음력 ${birthdate}` : `양력 ${birthdate}`,
       status: "pending",
     });
     if (error) {
