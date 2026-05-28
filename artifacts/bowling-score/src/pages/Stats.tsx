@@ -129,7 +129,7 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
                 const avg = calcAvg(record.scores);
                 return (
                   <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-2.5 text-muted-foreground text-xs">{formatDateFull(record.date)}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
                     {record.scores.map((score, idx) => (
                       <td key={idx} className="px-2 py-2.5 text-center">
                         {score !== null ? (
