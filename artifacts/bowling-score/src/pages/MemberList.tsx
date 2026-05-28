@@ -15,7 +15,9 @@ export default function MemberList() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
-        <Users className="w-6 h-6 text-blue-500" />
+        <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+          <Users className="w-5 h-5 text-blue-500" />
+        </div>
         <h1 className="text-2xl font-bold text-foreground">회원 목록</h1>
         <span className="ml-1 inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
           {members.length}명

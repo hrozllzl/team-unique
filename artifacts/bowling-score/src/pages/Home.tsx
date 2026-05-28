@@ -54,7 +54,7 @@ const memberMenus = [
   {
     path: "/stats",
     icon: BarChart2,
-    label: "통계 점수",
+    label: "전체통계점수",
   },
   {
     path: "/games",

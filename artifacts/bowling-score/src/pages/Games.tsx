@@ -166,7 +166,9 @@ export default function Games() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-orange-400" />
+          <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+            <Calendar className="w-5 h-5 text-blue-500" />
+          </div>
           <h1 className="text-2xl font-bold text-foreground">게임별 점수</h1>
         </div>
         <input
