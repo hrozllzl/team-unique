@@ -211,19 +211,19 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-10 pb-10">
       {!isMember && (
-        <>
-          <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
+        <div className="w-full max-w-2xl mb-8 rounded-2xl bg-white border border-gray-200 px-5 py-4 flex items-center justify-between">
+          <span className="text-gray-800 font-medium">관리자님 안녕하세요</span>
           {pendingCount > 0 ? (
             <button
               onClick={() => setLocation("/members")}
-              className="mb-8 px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors"
+              className="text-sm text-red-500 font-semibold hover:underline"
             >
-              새로운 가입 요청이 <span className="font-bold">{pendingCount}건</span> 있습니다
+              새로운 가입 요청이 {pendingCount}건 있습니다
             </button>
           ) : (
-            <p className="text-muted-foreground mb-8 text-sm">새로운 가입 요청이 없습니다</p>
+            <span className="text-sm text-gray-400">새로운 가입 요청이 없습니다</span>
           )}
-        </>
+        </div>
       )}
 
       {isMember ? (
