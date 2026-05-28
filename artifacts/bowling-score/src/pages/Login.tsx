@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, LogIn, UserPlus, CheckCircle } from "lucide-react";
+import { Target, LogIn, UserPlus, CheckCircle, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -139,19 +139,18 @@ export default function Login({ onLogin }: LoginProps) {
         )}
 
         {mode === "signup" && (
-          <form onSubmit={handleSignup} className="space-y-3">
-            <div className="flex items-center gap-2 mb-1">
+          <>
+            <div className="flex items-center h-12 mb-4 -mx-6 px-4 border-b border-gray-100">
               <button
                 type="button"
                 onClick={() => setMode("login")}
-                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
               >
-                ←
+                <ChevronLeft className="w-5 h-5" />
               </button>
-              <h2 className="text-base font-semibold text-gray-700 flex items-center gap-2">
-                <UserPlus className="w-4 h-4" /> 회원가입
-              </h2>
+              <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-gray-900">회원가입</span>
             </div>
+          <form onSubmit={handleSignup} className="space-y-3">
             <Input placeholder="아이디" value={signupData.username} onChange={setField("username")}
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
@@ -185,16 +184,8 @@ export default function Login({ onLogin }: LoginProps) {
                 {signupLoading ? "가입 중..." : "가입 신청"}
               </button>
             </div>
-            <div className="text-center pt-1">
-              <button
-                type="button"
-                onClick={() => setMode("login")}
-                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                이미 계정이 있으신가요? <span className="font-medium text-indigo-400">로그인</span>
-              </button>
-            </div>
           </form>
+          </>
         )}
 
         {mode === "signup_success" && (
