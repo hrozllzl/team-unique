@@ -80,7 +80,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refetchAll = useCallback(async () => {
     const [mr, rr, ur] = await Promise.all([
-      supabase.from("members").select("*"),
+      supabase.from("members").select("*").neq("is_deleted", true),
       supabase.from("game_records").select("*").order("created_at", { ascending: true }),
       supabase.from("user_accounts").select("*").order("created_at", { ascending: true }),
     ]);
@@ -119,7 +119,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const removeMember = useCallback((id: string) => {
     run(async () => {
-      await supabase.from("members").delete().eq("id", id);
+      await supabase.from("members").update({ is_deleted: true }).eq("id", id);
+      await supabase.from("user_accounts").update({ member_id: null, status: "pending" }).eq("member_id", id);
       await refetchAll();
     });
   }, [refetchAll]);
@@ -198,19 +199,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!account) return;
 
       const { data: existing } = await supabase
-        .from("members").select("*").eq("name", account.name).limit(1);
+        .from("members").select("*").eq("name", account.name).neq("is_deleted", true).limit(1);
 
       let memberId: string;
       if (existing && existing.length > 0) {
         await supabase.from("members")
-          .update({ phone: account.phone, birthdate: account.birthdate })
+          .update({ phone: account.phone, birthdate: account.birthdate, is_deleted: false })
           .eq("id", existing[0].id);
         memberId = existing[0].id;
       } else {
-        const { data: newMember } = await supabase.from("members")
-          .insert({ name: account.name, phone: account.phone, birthdate: account.birthdate })
-          .select().single();
-        memberId = newMember!.id;
+        const { data: deleted } = await supabase
+          .from("members").select("*").eq("name", account.name).eq("is_deleted", true).limit(1);
+
+        if (deleted && deleted.length > 0) {
+          await supabase.from("members")
+            .update({ phone: account.phone, birthdate: account.birthdate, is_deleted: false })
+            .eq("id", deleted[0].id);
+          memberId = deleted[0].id;
+        } else {
+          const { data: newMember } = await supabase.from("members")
+            .insert({ name: account.name, phone: account.phone, birthdate: account.birthdate })
+            .select().single();
+          memberId = newMember!.id;
+        }
       }
 
       await supabase.from("user_accounts")
