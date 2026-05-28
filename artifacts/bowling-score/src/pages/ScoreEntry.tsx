@@ -27,11 +27,18 @@ export default function ScoreEntry() {
   const [rows, setRows] = useState<Record<string, ScoreRow>>({});
 
   useEffect(() => {
-    setRows(
-      Object.fromEntries(
-        members.map((m) => [m.id, { scores: Array(GAME_COUNT).fill("") }])
-      )
-    );
+    setRows((prev) => {
+      const next = { ...prev };
+      members.forEach((m) => {
+        if (!next[m.id]) {
+          next[m.id] = { scores: Array(GAME_COUNT).fill("") };
+        }
+      });
+      Object.keys(next).forEach((id) => {
+        if (!members.find((m) => m.id === id)) delete next[id];
+      });
+      return next;
+    });
   }, [members]);
 
   const handleScore = (memberId: string, idx: number, val: string) => {
