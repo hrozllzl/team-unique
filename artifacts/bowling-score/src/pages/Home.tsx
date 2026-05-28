@@ -232,8 +232,8 @@ export default function Home() {
                   onClick={() => setLocation(menu.path)}
                   className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all duration-150 cursor-pointer"
                 >
-                  <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.5} />
-                  <p className="font-bold text-sm text-center leading-tight text-blue-600">{menu.label}</p>
+                  <Icon className="w-7 h-7 text-gray-900" strokeWidth={1.5} />
+                  <p className="font-bold text-sm text-center leading-tight text-gray-900">{menu.label}</p>
                 </button>
               );
             })}
