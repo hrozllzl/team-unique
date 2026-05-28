@@ -29,9 +29,9 @@ export default function Layout({ children, onLogout }: LayoutProps) {
             </div>
             <button
               onClick={() => setLocation("/")}
-              className="hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity rounded-lg overflow-hidden bg-black px-2 py-0.5"
             >
-              <img src="/logo.png" alt="팀 유니크" className="h-8 w-auto" />
+              <img src="/logo.png" alt="팀 유니크" className="h-7 w-auto" />
             </button>
           </div>
           <div className="flex items-center gap-3">
