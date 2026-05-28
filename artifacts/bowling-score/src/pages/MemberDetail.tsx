@@ -29,6 +29,13 @@ export default function MemberDetail({ id }: { id: string }) {
     .filter((r) => r.memberId === id)
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  const visibleCount = memberRecords.reduce((max, record) => {
+    for (let i = record.scores.length - 1; i >= 0; i--) {
+      if (record.scores[i] !== null) return Math.max(max, i + 1);
+    }
+    return max;
+  }, 1);
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + "T00:00:00");
     return `${d.getMonth() + 1}/${d.getDate()}`;
@@ -85,44 +92,54 @@ export default function MemberDetail({ id }: { id: string }) {
         </div>
       ) : (
         <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">날짜</th>
-                {[1, 2, 3, 4, 5].map((g) => (
-                  <th key={g} className="text-center px-3 py-2.5 font-medium text-muted-foreground">
-                    {g}G
-                  </th>
-                ))}
-                <th className="text-center px-3 py-2.5 font-medium text-muted-foreground">평균</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...memberRecords].reverse().map((record) => {
-                const avg = calcAvg(record.scores);
-                const d = new Date(record.date + "T00:00:00");
-                const dateLabel = `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
-                return (
-                  <tr
-                    key={record.id}
-                    className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{dateLabel}</td>
-                    {record.scores.map((score, idx) => (
-                      <td key={idx} className="px-3 py-3 text-center">
-                        {score !== null ? (
-                          <span className={scoreColor(score) || "text-foreground"}>{score}</span>
-                        ) : <span className="text-muted-foreground">–</span>}
-                      </td>
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-blue pb-1">
+              <table className="w-full text-sm table-fixed" style={{ minWidth: `${visibleCount * 60 + 160}px` }}>
+                <colgroup>
+                  <col className="w-28" />
+                  {Array.from({ length: visibleCount }).map((_, i) => <col key={i} />)}
+                  <col className="w-20" />
+                </colgroup>
+                <thead className="bg-gray-50 border-b border-border">
+                  <tr>
+                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">날짜</th>
+                    {Array.from({ length: visibleCount }, (_, i) => (
+                      <th key={i} className="text-center px-3 py-2.5 font-medium text-muted-foreground">
+                        {i + 1}G
+                      </th>
                     ))}
-                    <td className={`px-3 py-3 text-center font-semibold tabular-nums w-16 ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
-                      {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
-                    </td>
+                    <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">평균</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {[...memberRecords].reverse().map((record) => {
+                    const avg = calcAvg(record.scores);
+                    const d = new Date(record.date + "T00:00:00");
+                    const dateLabel = `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+                    return (
+                      <tr
+                        key={record.id}
+                        className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">{dateLabel}</td>
+                        {record.scores.slice(0, visibleCount).map((score, idx) => (
+                          <td key={idx} className="px-3 py-3 text-center">
+                            {score !== null ? (
+                              <span className={scoreColor(score) || "text-foreground"}>{score}</span>
+                            ) : <span className="text-muted-foreground">–</span>}
+                          </td>
+                        ))}
+                        <td className={`px-4 py-3 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
+                          {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent rounded-r-lg" />
+          </div>
         </div>
       )}
     </div>
