@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BarChart2, ArrowUp, ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine,
   LineChart, Line,
 } from "recharts";
 import { useApp } from "@/context/AppContext";
@@ -282,6 +282,15 @@ export default function Stats() {
                     formatter={(val: number) => [`${val}점`, "평균"]}
                     cursor={{ fill: "rgba(0,0,0,0.04)" }}
                   />
+                  {teamAvg !== null && (
+                    <ReferenceLine
+                      y={teamAvg}
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      strokeDasharray="6 3"
+                      label={{ value: `팀 평균 ${teamAvg}점`, position: "insideTopRight", fontSize: 11, fill: "#f97316", fontWeight: "bold" }}
+                    />
+                  )}
                   <Bar
                     dataKey="avg"
                     radius={[6, 6, 0, 0]}
