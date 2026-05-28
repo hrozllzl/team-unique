@@ -216,8 +216,7 @@ export default function Login({ onLogin }: LoginProps) {
             <p className="text-sm text-gray-400 mb-8">관리자 승인 후 로그인하실 수 있습니다.</p>
             <button
               onClick={() => setMode("login")}
-              className={gradientBtn}
-              style={{ background: "#3b82f6" }}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full py-3 text-base transition-colors"
             >
               로그인 화면으로
             </button>
