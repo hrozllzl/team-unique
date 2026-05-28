@@ -162,18 +162,18 @@ export default function Login({ onLogin }: LoginProps) {
               inputMode="numeric"
             />
             <div className="flex items-center gap-2">
-              <div className="flex shrink-0 rounded-full border border-gray-200 overflow-hidden">
+              <div className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white px-1.5 py-1.5">
                 <button
                   type="button"
                   onClick={() => setIsLunar(false)}
-                  className={`px-3 py-2.5 text-sm font-medium transition-colors ${!isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${!isLunar ? "bg-blue-500 text-white" : "text-gray-400"}`}
                 >
                   양력
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsLunar(true)}
-                  className={`px-3 py-2.5 text-sm font-medium transition-colors ${isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${isLunar ? "bg-blue-500 text-white" : "text-gray-400"}`}
                 >
                   음력
                 </button>
