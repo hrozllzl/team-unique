@@ -217,7 +217,7 @@ export default function Login({ onLogin }: LoginProps) {
             <button
               onClick={() => setMode("login")}
               className={gradientBtn}
-              style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+              style={{ background: "#3b82f6" }}
             >
               로그인 화면으로
             </button>
