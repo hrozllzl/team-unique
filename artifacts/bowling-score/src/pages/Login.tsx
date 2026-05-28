@@ -105,7 +105,7 @@ export default function Login({ onLogin }: LoginProps) {
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
               autoComplete="username"
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
             />
             <Input
               type="password"
@@ -113,7 +113,7 @@ export default function Login({ onLogin }: LoginProps) {
               value={loginPw}
               onChange={(e) => setLoginPw(e.target.value)}
               autoComplete="current-password"
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
             />
             {loginError && <p className="text-sm text-destructive text-center pt-1">{loginError}</p>}
             <div className="pt-1">
@@ -144,25 +144,25 @@ export default function Login({ onLogin }: LoginProps) {
               <UserPlus className="w-4 h-4" /> 회원가입
             </h2>
             <Input placeholder="아이디" value={signupData.username} onChange={setField("username")}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input type="password" placeholder="비밀번호 확인" value={signupData.confirmPw} onChange={setField("confirmPw")}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input placeholder="이름" value={signupData.name} onChange={setField("name")}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input
               placeholder="전화번호 (010-0000-0000)"
               value={signupData.phone}
               onChange={(e) => setSignupData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
               inputMode="numeric"
             />
             <Input
               placeholder="생년월일 (1900-01-01)"
               value={signupData.birthdate}
               onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
-              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
               inputMode="numeric"
             />
             {signupError && <p className="text-sm text-destructive text-center">{signupError}</p>}
