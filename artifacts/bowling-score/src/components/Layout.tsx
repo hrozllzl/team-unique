@@ -17,14 +17,16 @@ export default function Layout({ children, onLogout }: LayoutProps) {
       <header className="border-b border-border bg-white sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {!isHome && (
-              <button
-                onClick={() => window.history.back()}
-                className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
+            <div className="w-8 h-8 flex items-center justify-center">
+              {!isHome && (
+                <button
+                  onClick={() => window.history.back()}
+                  className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              )}
+            </div>
             <button
               onClick={() => setLocation("/")}
               className="hover:opacity-80 transition-opacity"
