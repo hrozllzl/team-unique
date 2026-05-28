@@ -325,7 +325,7 @@ export default function Stats() {
                       stroke="#3b82f6"
                       strokeWidth={2}
                       strokeDasharray="6 3"
-                      label={{ value: `팀 평균 ${teamAvg}점`, position: "insideTopRight", fontSize: 11, fill: "#3b82f6", fontWeight: "bold" }}
+                      label={{ value: `팀 평균 ${teamAvg}점`, position: "insideTopRight", fontSize: 11, fill: "#3b82f6", fontWeight: "bold", dy: -10 }}
                     />
                   )}
                 </BarChart>
