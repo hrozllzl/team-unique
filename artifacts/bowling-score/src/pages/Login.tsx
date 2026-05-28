@@ -121,7 +121,7 @@ export default function Login({ onLogin }: LoginProps) {
                 type="submit"
                 disabled={loginLoading || !loginId || !loginPw}
                 className={gradientBtn}
-                style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+                style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
               >
                 {loginLoading ? "로그인 중..." : "로그인"}
               </button>
@@ -132,7 +132,7 @@ export default function Login({ onLogin }: LoginProps) {
                 onClick={() => setMode("signup")}
                 className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
-                계정이 없으신가요? <span className="font-medium text-indigo-400">회원가입</span>
+                계정이 없으신가요? <span className="font-medium text-blue-500">회원가입</span>
               </button>
             </div>
           </form>
@@ -171,7 +171,7 @@ export default function Login({ onLogin }: LoginProps) {
                 type="submit"
                 disabled={signupLoading}
                 className={gradientBtn}
-                style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+                style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
               >
                 {signupLoading ? "가입 중..." : "가입 신청"}
               </button>
@@ -182,7 +182,7 @@ export default function Login({ onLogin }: LoginProps) {
                 onClick={() => setMode("login")}
                 className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
-                이미 계정이 있으신가요? <span className="font-medium text-indigo-400">로그인</span>
+                이미 계정이 있으신가요? <span className="font-medium text-blue-500">로그인</span>
               </button>
             </div>
           </form>
