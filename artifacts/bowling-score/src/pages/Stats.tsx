@@ -193,6 +193,11 @@ export default function Stats() {
     .filter((m) => m.avg !== null)
     .map((m, i) => ({ name: m.name, avg: m.avg as number, colorIdx: i }));
 
+  const allScores = records.flatMap((r) => r.scores.filter((s): s is number => s !== null));
+  const teamAvg = allScores.length > 0
+    ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
+    : null;
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(key); setSortDir("asc"); }
@@ -239,6 +244,22 @@ export default function Stats() {
         </div>
       ) : (
         <>
+          {teamAvg !== null && (
+            <div className="bg-white border border-border rounded-2xl shadow-sm px-5 py-4 mb-6 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                <BarChart2 className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-0.5">우리 팀 평균 점수</p>
+                <p className="text-2xl font-bold text-blue-500 tabular-nums">{teamAvg}<span className="text-sm font-normal text-muted-foreground ml-1">점</span></p>
+              </div>
+              <div className="ml-auto text-right">
+                <p className="text-xs text-muted-foreground">전체 게임 수</p>
+                <p className="text-lg font-bold text-foreground tabular-nums">{allScores.length}<span className="text-xs font-normal text-muted-foreground ml-1">게임</span></p>
+              </div>
+            </div>
+          )}
+
           {chartData.length > 0 && (
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
