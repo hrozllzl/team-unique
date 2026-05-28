@@ -27,8 +27,9 @@ type SortDir = "asc" | "desc";
 
 export default function Games() {
   const { members, records, removeRecord, updateRecord, updateRecordsDate } = useApp();
-  const { role } = useAuth();
+  const { role, userName } = useAuth();
   const isAdmin = role === "admin";
+  const myMemberId = members.find((m) => m.name === userName)?.id ?? "";
   const { toast } = useToast();
 
   const [filterDate, setFilterDate] = useState("");
@@ -252,18 +253,25 @@ export default function Games() {
                     </tr>
                   </thead>
                   <tbody>
-                    {grouped[date].map((record, rank) => (
+                    {grouped[date].map((record, rank) => {
+                      const isMe = myMemberId && record.memberId === myMemberId;
+                      return (
                       <tr
                         key={record.id}
                         data-testid={`game-row-${record.id}`}
-                        className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
+                        className={`border-b border-border last:border-0 transition-colors ${isMe ? "bg-blue-50" : "hover:bg-gray-50"}`}
                       >
                         <td className="px-3 py-3 text-center">
                           {colSort === "avg" ? rankBadge(rank) : (
                             <span className="text-muted-foreground text-xs">–</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-medium">{getMemberName(record.memberId)}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <span className="flex items-center gap-1.5">
+                            {getMemberName(record.memberId)}
+                            {isMe && <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>}
+                          </span>
+                        </td>
                         {record.scores.map((score, idx) => (
                           <td key={idx} className="px-2 py-3 text-center tabular-nums">
                             {score !== null ? (
@@ -301,7 +309,7 @@ export default function Games() {
                           </td>
                         )}
                       </tr>
-                    ))}
+                    ); })}
                   </tbody>
                 </table>
               </div>

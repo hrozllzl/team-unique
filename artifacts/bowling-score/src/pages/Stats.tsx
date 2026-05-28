@@ -5,6 +5,7 @@ import {
   LineChart, Line,
 } from "recharts";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { scoreColor, calcAvg } from "@/lib/scoreUtils";
 
 type SortKey = "rank" | "avg" | "best";
@@ -152,9 +153,11 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
 
 export default function Stats() {
   const { members, records } = useApp();
+  const { userName } = useAuth();
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const myMemberId = members.find((m) => m.name === userName)?.id ?? "";
 
   const withStats = members.map((m) => ({ ...m, ...getMemberStats(m.id, records) }));
 
@@ -244,12 +247,14 @@ export default function Stats() {
                     formatter={(val: number) => [`${val}점`, "평균"]}
                     cursor={{ fill: "rgba(0,0,0,0.04)" }}
                   />
-                  <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={40}>
+                  <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={40} label={{ position: "top", fontSize: 11, formatter: (_: unknown, __: unknown, index: number) => chartData[index]?.name === userName ? "▼ 나" : "" }}>
                     {chartData.map((entry) => (
                       <Cell
                         key={entry.name}
-                        fill={BAR_COLORS[entry.colorIdx % BAR_COLORS.length]}
-                        fillOpacity={0.85}
+                        fill={entry.name === userName ? "#f97316" : BAR_COLORS[entry.colorIdx % BAR_COLORS.length]}
+                        fillOpacity={entry.name === userName ? 1 : 0.75}
+                        stroke={entry.name === userName ? "#ea580c" : "none"}
+                        strokeWidth={entry.name === userName ? 2 : 0}
                       />
                     ))}
                   </Bar>
@@ -295,12 +300,15 @@ export default function Stats() {
                     <tr
                       key={member.id}
                       data-testid={`stats-row-${member.id}`}
-                      className={`border-b border-border transition-colors cursor-pointer ${selectedMemberId === member.id ? "bg-gray-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
+                      className={`border-b border-border transition-colors cursor-pointer ${member.id === myMemberId ? "bg-orange-50" : selectedMemberId === member.id ? "bg-gray-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
                       onClick={() => toggleMember(member.id)}
                     >
                       <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
                       <td className="px-4 py-3.5 font-medium">
                         <span className="flex items-center gap-1.5">
+                          {member.id === myMemberId && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-xs font-bold leading-none">나</span>
+                          )}
                           {member.name}
                           {selectedMemberId === member.id
                             ? <ChevronUp className="w-3.5 h-3.5 text-blue-400" />
