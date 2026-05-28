@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Members from "@/pages/Members";
 import MemberDetail from "@/pages/MemberDetail";
+import MemberList from "@/pages/MemberList";
 import ScoreEntry from "@/pages/ScoreEntry";
 import Stats from "@/pages/Stats";
 import Games from "@/pages/Games";
@@ -46,6 +47,7 @@ function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: U
           </Route>
           {isAdmin && <Route path="/members" component={Members} />}
           {isAdmin && <Route path="/score-entry" component={ScoreEntry} />}
+          <Route path="/member-list" component={MemberList} />
           {/* Redirect non-admin access to home */}
           {!isAdmin && <Route path="/members"><Redirect to="/" /></Route>}
           {!isAdmin && <Route path="/score-entry"><Redirect to="/" /></Route>}

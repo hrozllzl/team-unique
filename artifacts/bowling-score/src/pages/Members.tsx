@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock } from "lucide-react";
+import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock, Search } from "lucide-react";
 import { useLocation } from "wouter";
 import { useApp } from "@/context/AppContext";
 import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
@@ -22,6 +22,7 @@ export default function Members() {
   const { toast } = useToast();
 
   const [tab, setTab] = useState<Tab>("members");
+  const [search, setSearch] = useState("");
   const pendingAccounts = userAccounts.filter((u) => u.status === "pending");
 
   // Add member dialog
@@ -118,15 +119,25 @@ export default function Members() {
 
       {/* Members Tab */}
       {tab === "members" && (
-        members.length === 0 ? (
+        <>
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="이름으로 검색"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 rounded-xl"
+            />
+          </div>
+          {members.filter((m) => m.name.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>등록된 회원이 없습니다.</p>
-            <p className="text-sm mt-1">회원 추가 버튼을 눌러 등록하세요.</p>
+            <p>{search ? "검색 결과가 없습니다." : "등록된 회원이 없습니다."}</p>
+            {!search && <p className="text-sm mt-1">회원 추가 버튼을 눌러 등록하세요.</p>}
           </div>
         ) : (
           <div className="space-y-3">
-            {members.map((member) => (
+            {members.filter((m) => m.name.toLowerCase().includes(search.toLowerCase())).map((member) => (
               <div key={member.id} className="flex items-center justify-between px-4 py-3.5 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all group">
                 <div
                   className="flex items-center gap-3 flex-1 cursor-pointer"
@@ -166,7 +177,8 @@ export default function Members() {
               </div>
             ))}
           </div>
-        )
+        )}
+        </>
       )}
 
       {/* Pending Tab */}

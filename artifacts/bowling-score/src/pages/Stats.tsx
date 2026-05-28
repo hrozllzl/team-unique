@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { BarChart2, ArrowUp, ArrowUpDown } from "lucide-react";
+import { BarChart2, ArrowUp, ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  LineChart, Line,
 } from "recharts";
 import { useApp } from "@/context/AppContext";
-import { scoreColor } from "@/lib/scoreUtils";
+import { scoreColor, calcAvg } from "@/lib/scoreUtils";
 
 type SortKey = "rank" | "avg" | "best";
 type SortDir = "asc" | "desc";
@@ -25,10 +26,135 @@ function getMemberStats(memberId: string, records: ReturnType<typeof useApp>["re
 
 const BAR_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#84cc16"];
 
+function formatDateShort(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function formatDateFull(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+}
+
+function MemberDetailPanel({ memberId }: { memberId: string }) {
+  const { members, records } = useApp();
+  const member = members.find((m) => m.id === memberId);
+  if (!member) return null;
+
+  const memberRecords = records
+    .filter((r) => r.memberId === memberId)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const chartData = memberRecords.map((r) => ({
+    date: formatDateShort(r.date),
+    avg: calcAvg(r.scores),
+  }));
+
+  const allScores = memberRecords.flatMap((r) =>
+    r.scores.filter((s): s is number => s !== null)
+  );
+  const totalAvg = allScores.length > 0
+    ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
+    : null;
+  const best = allScores.length > 0 ? Math.max(...allScores) : null;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
+          {member.name.charAt(0)}
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">{member.name}님의 상세 기록</p>
+          <p className="text-xs text-muted-foreground">
+            {memberRecords.length}회 참여 · 평균{" "}
+            <span className={`font-semibold ${totalAvg !== null ? (scoreColor(totalAvg) || "text-blue-500") : ""}`}>
+              {totalAvg ?? "-"}점
+            </span>
+            {" "}· 최고{" "}
+            <span className={`font-semibold ${best !== null ? (scoreColor(best) || "text-blue-600") : ""}`}>
+              {best ?? "-"}점
+            </span>
+          </p>
+        </div>
+      </div>
+
+      {chartData.length >= 2 ? (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">평균 점수 추이</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11 }} width={32} />
+              <Tooltip
+                formatter={(val: number) => [`${val}점`, "평균"]}
+                labelFormatter={(label) => `날짜: ${label}`}
+              />
+              <Line
+                type="monotone"
+                dataKey="avg"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={{ r: 3, fill: "#3b82f6" }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : chartData.length === 1 ? (
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-xs text-blue-600 text-center">
+          게임 기록이 2개 이상일 때 추이 그래프가 표시됩니다.
+        </div>
+      ) : null}
+
+      {memberRecords.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">아직 참여한 게임 기록이 없습니다.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-border">
+              <tr>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">날짜</th>
+                {[1, 2, 3, 4, 5].map((g) => (
+                  <th key={g} className="text-center px-2 py-2 font-medium text-muted-foreground">{g}G</th>
+                ))}
+                <th className="text-center px-2 py-2 font-medium text-muted-foreground">평균</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...memberRecords].reverse().map((record) => {
+                const avg = calcAvg(record.scores);
+                return (
+                  <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs">{formatDateFull(record.date)}</td>
+                    {record.scores.map((score, idx) => (
+                      <td key={idx} className="px-2 py-2.5 text-center">
+                        {score !== null ? (
+                          <span className={scoreColor(score) || "text-foreground"}>{score}</span>
+                        ) : <span className="text-muted-foreground">–</span>}
+                      </td>
+                    ))}
+                    <td className={`px-2 py-2.5 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
+                      {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Stats() {
   const { members, records } = useApp();
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   const withStats = members.map((m) => ({ ...m, ...getMemberStats(m.id, records) }));
 
@@ -55,6 +181,10 @@ export default function Stats() {
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(key); setSortDir("asc"); }
+  };
+
+  const toggleMember = (id: string) => {
+    setSelectedMemberId((prev) => (prev === id ? null : id));
   };
 
   const rankBadge = (rank: number) => {
@@ -129,6 +259,7 @@ export default function Stats() {
           )}
 
           <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+            <p className="text-xs text-muted-foreground px-4 pt-3 pb-1">회원 이름을 클릭하면 상세 기록을 볼 수 있어요</p>
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-border">
                 <tr>
@@ -154,37 +285,55 @@ export default function Stats() {
                     </button>
                   </th>
                   <th className="text-right px-4 py-3 font-medium text-muted-foreground">
-                    참여 게임 <ArrowUpDown className="w-3.5 h-3.5 ml-1 inline opacity-40" />
+                    참여 게임
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.map((member, idx) => (
-                  <tr
-                    key={member.id}
-                    data-testid={`stats-row-${member.id}`}
-                    className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
-                    <td className="px-4 py-3.5 font-medium">{member.name}</td>
-                    <td className="px-4 py-3.5 text-center tabular-nums">
-                      {member.avg !== null ? (
-                        <span className={`font-semibold tabular-nums ${scoreColor(member.avg) || "text-blue-500"}`}>{member.avg}</span>
-                      ) : (
-                        <span className="text-muted-foreground">–</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 text-center tabular-nums">
-                      {member.best !== null ? (
-                        <span className={`font-medium tabular-nums ${scoreColor(member.best)}`}>{member.best}</span>
-                      ) : (
-                        <span className="text-muted-foreground">–</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 text-right text-muted-foreground">
-                      {member.gameCount}게임
-                    </td>
-                  </tr>
+                  <>
+                    <tr
+                      key={member.id}
+                      data-testid={`stats-row-${member.id}`}
+                      className={`border-b border-border transition-colors cursor-pointer ${selectedMemberId === member.id ? "bg-blue-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
+                      onClick={() => toggleMember(member.id)}
+                    >
+                      <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
+                      <td className="px-4 py-3.5 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          {member.name}
+                          {selectedMemberId === member.id
+                            ? <ChevronUp className="w-3.5 h-3.5 text-blue-400" />
+                            : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
+                          }
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-center tabular-nums">
+                        {member.avg !== null ? (
+                          <span className={`font-semibold tabular-nums ${scoreColor(member.avg) || "text-blue-500"}`}>{member.avg}</span>
+                        ) : (
+                          <span className="text-muted-foreground">–</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-center tabular-nums">
+                        {member.best !== null ? (
+                          <span className={`font-medium tabular-nums ${scoreColor(member.best)}`}>{member.best}</span>
+                        ) : (
+                          <span className="text-muted-foreground">–</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-right text-muted-foreground">
+                        {member.gameCount}게임
+                      </td>
+                    </tr>
+                    {selectedMemberId === member.id && (
+                      <tr key={`${member.id}-detail`} className="border-b border-border last:border-0 bg-blue-50/50">
+                        <td colSpan={5} className="px-4 pb-5">
+                          <MemberDetailPanel memberId={member.id} />
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
