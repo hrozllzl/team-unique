@@ -68,11 +68,12 @@ export default function Members() {
   };
 
   const formatBirthdate = (bd: string) => {
-    if (!bd) return null;
+    if (!bd || !bd.trim()) return null;
     try {
       const d = new Date(bd + "T00:00:00");
+      if (isNaN(d.getTime())) return null;
       return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-    } catch { return bd; }
+    } catch { return null; }
   };
 
   return (
