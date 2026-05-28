@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider, useApp } from "@/context/AppContext";
 import Layout from "@/components/Layout";
+import MigrationModal from "@/components/MigrationModal";
 import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Members from "@/pages/Members";
@@ -31,19 +32,22 @@ function AppRoutes({ onLogout }: { onLogout: () => void }) {
   }
 
   return (
-    <Layout onLogout={onLogout}>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/members" component={Members} />
-        <Route path="/members/:id">
-          {(params) => <MemberDetail id={params.id} />}
-        </Route>
-        <Route path="/score-entry" component={ScoreEntry} />
-        <Route path="/stats" component={Stats} />
-        <Route path="/games" component={Games} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <>
+      <MigrationModal />
+      <Layout onLogout={onLogout}>
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/members" component={Members} />
+          <Route path="/members/:id">
+            {(params) => <MemberDetail id={params.id} />}
+          </Route>
+          <Route path="/score-entry" component={ScoreEntry} />
+          <Route path="/stats" component={Stats} />
+          <Route path="/games" component={Games} />
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
+    </>
   );
 }
 
