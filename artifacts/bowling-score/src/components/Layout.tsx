@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, LogOut, ShieldCheck, User, ArrowLeft } from "lucide-react";
+import { LogOut, ShieldCheck, User, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface LayoutProps {
@@ -41,15 +41,6 @@ export default function Layout({ children, onLogout }: LayoutProps) {
               )}
               <span className="font-medium text-foreground">{userName}</span>
             </div>
-            {!isHome && (
-              <button
-                onClick={() => setLocation("/")}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                홈으로
-              </button>
-            )}
             <button
               onClick={onLogout}
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors"
