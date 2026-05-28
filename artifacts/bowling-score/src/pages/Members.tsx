@@ -187,50 +187,48 @@ export default function Members() {
           <div className="space-y-3">
             {pendingAccounts.map((account) => (
               <div key={account.id} className="bg-white border border-border rounded-2xl shadow-sm px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-semibold text-sm shrink-0">
-                      {account.name.charAt(0)}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-semibold text-sm shrink-0">
+                    {account.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-foreground">{account.name}</span>
+                      <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">@{account.username}</span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground">{account.name}</span>
-                        <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">@{account.username}</span>
-                      </div>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        {account.birthdate && formatBirthdateDisplay(account.birthdate) && (
-                          <span className="text-xs text-muted-foreground">{formatBirthdateDisplay(account.birthdate)}</span>
-                        )}
-                        {account.phone && (
-                          <span className="text-xs text-muted-foreground">{account.phone}</span>
-                        )}
-                      </div>
-                      {members.find((m) => m.name === account.name) && (
-                        <span className="text-xs text-teal-600 font-medium mt-0.5 block">
-                          ✓ 기존 회원과 이름 일치 — 승인 시 정보 업데이트
-                        </span>
+                    <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                      {account.birthdate && formatBirthdateDisplay(account.birthdate) && (
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">{formatBirthdateDisplay(account.birthdate)}</span>
+                      )}
+                      {account.phone && (
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">{account.phone}</span>
                       )}
                     </div>
+                    {members.find((m) => m.name === account.name) && (
+                      <span className="text-xs text-teal-600 font-medium mt-0.5 block">
+                        ✓ 기존 회원과 이름 일치 — 승인 시 정보 업데이트
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      size="sm"
-                      onClick={() => handleApprove(account.id, account.name)}
-                      className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl gap-1 h-8 px-3"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      승인
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReject(account.id, account.name)}
-                      className="rounded-xl gap-1 h-8 px-3 hover:border-destructive hover:text-destructive"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      거절
-                    </Button>
-                  </div>
+                </div>
+                <div className="flex items-center gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    onClick={() => handleApprove(account.id, account.name)}
+                    className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl gap-1 h-8 px-3"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    승인
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleReject(account.id, account.name)}
+                    className="rounded-xl gap-1 h-8 px-3 hover:border-destructive hover:text-destructive"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    거절
+                  </Button>
                 </div>
               </div>
             ))}
