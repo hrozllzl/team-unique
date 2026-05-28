@@ -161,28 +161,28 @@ export default function Login({ onLogin }: LoginProps) {
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
               inputMode="numeric"
             />
-            <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white overflow-hidden pr-2">
-              <div className="flex shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="flex shrink-0 rounded-full border border-gray-200 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setIsLunar(false)}
-                  className={`px-3 py-3 text-sm font-medium transition-colors ${!isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
+                  className={`px-3 py-2.5 text-sm font-medium transition-colors ${!isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
                 >
                   양력
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsLunar(true)}
-                  className={`px-3 py-3 text-sm font-medium transition-colors ${isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
+                  className={`px-3 py-2.5 text-sm font-medium transition-colors ${isLunar ? "bg-blue-500 text-white" : "bg-white text-gray-400"}`}
                 >
                   음력
                 </button>
               </div>
-              <input
+              <Input
                 placeholder="생년월일 (1900-01-01)"
                 value={signupData.birthdate}
                 onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
-                className="flex-1 bg-transparent text-base placeholder:text-gray-400 outline-none py-3 min-w-0"
+                className="rounded-full border-gray-200 bg-white shadow-none h-11 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
                 inputMode="numeric"
               />
             </div>
