@@ -138,10 +138,10 @@ export default function ScoreEntry() {
       </div>
 
       {duplicateIds.size > 0 && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4 text-sm text-amber-700">
+        <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-4 text-sm text-blue-700">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
           <span>
-            <strong>{[...duplicateIds].map((id) => members.find((m) => m.id === id)?.name).filter(Boolean).join(", ")}</strong>님은 해당 날짜에 이미 기록이 있어 저장에서 제외됩니다.
+            <strong>{[...duplicateIds].map((id) => members.find((m) => m.id === id)?.name).filter(Boolean).join(", ")}</strong>님은 해당 날짜에 이미 입력 완료된 기록이 있습니다.
           </span>
         </div>
       )}
@@ -184,7 +184,7 @@ export default function ScoreEntry() {
                         </div>
                         <span className="font-medium">{member.name}</span>
                         {isDuplicate && (
-                          <span className="text-xs text-amber-500 font-medium">중복</span>
+                          <span className="text-xs text-blue-500 font-medium">입력완료</span>
                         )}
                       </div>
                     </td>
