@@ -54,17 +54,20 @@ const memberMenus = [
   {
     path: "/stats",
     icon: BarChart2,
-    label: "전체 통계 점수",
+    label: "통계 점수",
+    iconBg: "bg-blue-500",
   },
   {
     path: "/games",
     icon: Calendar,
-    label: "게임별 점수",
+    label: "게임 기록",
+    iconBg: "bg-orange-400",
   },
   {
     path: "/member-list",
     icon: Users,
     label: "회원 목록",
+    iconBg: "bg-emerald-500",
   },
 ];
 
@@ -230,10 +233,12 @@ export default function Home() {
                 <button
                   key={menu.path}
                   onClick={() => setLocation(menu.path)}
-                  className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all duration-150 cursor-pointer"
+                  className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl active:bg-gray-100 transition-colors duration-100 cursor-pointer"
                 >
-                  <Icon className="w-7 h-7 text-gray-400" strokeWidth={1.5} />
-                  <p className="font-bold text-sm text-center leading-tight text-gray-900">{menu.label}</p>
+                  <div className={`w-14 h-14 rounded-2xl ${menu.iconBg} flex items-center justify-center shadow-sm`}>
+                    <Icon className="w-7 h-7 text-white" strokeWidth={1.8} />
+                  </div>
+                  <p className="text-xs font-semibold text-center leading-tight text-gray-700">{menu.label}</p>
                 </button>
               );
             })}
