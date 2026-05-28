@@ -46,6 +46,13 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
     .filter((r) => r.memberId === memberId)
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  const visibleCount = memberRecords.reduce((max, record) => {
+    for (let i = record.scores.length - 1; i >= 0; i--) {
+      if (record.scores[i] !== null) return Math.max(max, i + 1);
+    }
+    return max;
+  }, 1);
+
   const chartData = memberRecords.map((r) => ({
     date: formatDateShort(r.date),
     avg: calcAvg(r.scores),
@@ -117,14 +124,14 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
           <table className="w-full text-sm table-fixed">
             <colgroup>
               <col className="w-24" />
-              <col /><col /><col /><col /><col />
+              {Array.from({ length: visibleCount }).map((_, i) => <col key={i} />)}
               <col className="w-12" />
             </colgroup>
             <thead className="bg-gray-50 border-b border-border">
               <tr>
                 <th className="text-left px-2 py-2 font-medium text-muted-foreground">날짜</th>
-                {[1, 2, 3, 4, 5].map((g) => (
-                  <th key={g} className="text-center px-1 py-2 font-medium text-muted-foreground">{g}G</th>
+                {Array.from({ length: visibleCount }, (_, i) => (
+                  <th key={i} className="text-center px-1 py-2 font-medium text-muted-foreground">{i + 1}G</th>
                 ))}
                 <th className="text-center px-1 py-2 font-medium text-muted-foreground">평균</th>
               </tr>
@@ -135,7 +142,7 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
                 return (
                   <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
                     <td className="px-2 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
-                    {record.scores.map((score, idx) => (
+                    {record.scores.slice(0, visibleCount).map((score, idx) => (
                       <td key={idx} className="px-1 py-2.5 text-center">
                         {score !== null ? (
                           <span className={scoreColor(score) || "text-foreground"}>{score}</span>
