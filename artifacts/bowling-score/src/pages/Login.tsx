@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import type { UserRole } from "@/context/AuthContext";
 import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
+import { hashPassword, verifyPassword, isHashed } from "@/lib/password";
 
 interface LoginProps {
   onLogin: (role: UserRole, userName: string) => void;
@@ -46,10 +47,21 @@ export default function Login({ onLogin }: LoginProps) {
       .from("user_accounts")
       .select("*")
       .eq("username", loginId)
-      .eq("password", loginPw)
       .maybeSingle();
 
     if (data) {
+      const passwordMatch = await verifyPassword(loginPw, data.password);
+      if (!passwordMatch) {
+        setLoginError("아이디 또는 비밀번호가 올바르지 않습니다.");
+        setLoginLoading(false);
+        return;
+      }
+
+      if (!isHashed(data.password)) {
+        const hashed = await hashPassword(loginPw);
+        await supabase.from("user_accounts").update({ password: hashed }).eq("id", data.id);
+      }
+
       if (data.status === "approved") {
         sessionStorage.setItem("bowling_auth_role", "member");
         sessionStorage.setItem("bowling_auth_name", data.name);
@@ -72,8 +84,9 @@ export default function Login({ onLogin }: LoginProps) {
       setSignupError("모든 항목을 입력해 주세요."); return;
     }
     setSignupLoading(true);
+    const hashed = await hashPassword(password);
     const { error } = await supabase.from("user_accounts").insert({
-      username, password, name, phone,
+      username, password: hashed, name, phone,
       birthdate: isLunar ? `음력 ${birthdate}` : `양력 ${birthdate}`,
       status: "pending",
     });

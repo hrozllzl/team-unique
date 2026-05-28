@@ -260,7 +260,7 @@ export default function Home() {
                 </div>
                 <div className="text-center">
                   <p className="font-bold text-base text-gray-900">{menu.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{menu.desc}</p>
+                  {"desc" in menu && <p className="text-xs text-muted-foreground mt-0.5">{(menu as { desc: string }).desc}</p>}
                 </div>
               </button>
             );

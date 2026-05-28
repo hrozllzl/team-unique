@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { hashPassword } from "@/lib/password";
 
 export interface Member {
   id: string;
@@ -176,9 +177,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addUserAccount = useCallback(async (
     account: Omit<UserAccount, "id" | "status" | "memberId">
   ): Promise<{ error?: string }> => {
+    const hashed = await hashPassword(account.password);
     const { error } = await supabase.from("user_accounts").insert({
       username: account.username,
-      password: account.password,
+      password: hashed,
       name: account.name,
       phone: account.phone,
       birthdate: account.birthdate,
