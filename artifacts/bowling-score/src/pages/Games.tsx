@@ -267,9 +267,9 @@ export default function Games() {
                           )}
                         </td>
                         <td className="px-4 py-3 font-medium">
-                          <span className="flex items-center gap-1.5">
-                            {getMemberName(record.memberId)}
-                            {isMe && <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>}
+                          <span className="flex items-center gap-1.5 flex-nowrap min-w-0">
+                            <span className="truncate">{getMemberName(record.memberId)}</span>
+                            {isMe && <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>}
                           </span>
                         </td>
                         {record.scores.map((score, idx) => (
