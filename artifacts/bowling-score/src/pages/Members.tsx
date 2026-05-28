@@ -74,15 +74,6 @@ export default function Members() {
     toast({ title: `${name}님 가입 요청을 거절했습니다.` });
   };
 
-  const formatBirthdate = (bd: string) => {
-    if (!bd || !bd.trim()) return null;
-    try {
-      const d = new Date(bd + "T00:00:00");
-      if (isNaN(d.getTime())) return null;
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-    } catch { return null; }
-  };
-
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
