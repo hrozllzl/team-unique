@@ -91,8 +91,8 @@ export default function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <img src="/logo.png" alt="팀 유니크 로고" className="w-16 h-16 object-contain" />
+          <div className="inline-flex items-center justify-center w-28 h-28 mb-4">
+            <img src="/logo.png" alt="팀 유니크 로고" className="w-28 h-28 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
           <p className="text-gray-400 text-sm mt-1">볼링 점수 관리 시스템</p>
