@@ -242,8 +242,9 @@ export default function Stats() {
           {chartData.length > 0 && (
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
-              <div className="overflow-x-auto scrollbar-blue pb-1">
-              <div style={{ minWidth: chartData.length * 40 }}>
+              <div className="relative">
+                <div className="overflow-x-auto scrollbar-blue pb-2">
+                <div style={{ minWidth: Math.max(chartData.length * 40, 320) }}>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={chartData} margin={{ top: 28, right: 10, left: 0, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -303,7 +304,9 @@ export default function Stats() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              </div>
+                </div>
+                </div>
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent rounded-r-lg" />
               </div>
             </div>
           )}
