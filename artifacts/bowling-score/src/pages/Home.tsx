@@ -228,8 +228,12 @@ export default function Home() {
 
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-10 pb-10">
-      <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
-      <p className="text-muted-foreground mb-8 text-base">메뉴를 선택하세요</p>
+      {!isMember && (
+        <>
+          <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
+          <p className="text-muted-foreground mb-8 text-base">메뉴를 선택하세요</p>
+        </>
+      )}
 
       {isMember ? (
         <>
