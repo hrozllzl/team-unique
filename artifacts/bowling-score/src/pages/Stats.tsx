@@ -229,7 +229,7 @@ export default function Stats() {
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
               <div className="overflow-x-auto">
-              <div style={{ minWidth: Math.max(320, chartData.length * 56) }}>
+              <div style={{ minWidth: chartData.length * 40 }}>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={chartData} margin={{ top: 28, right: 10, left: 0, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -320,7 +320,7 @@ export default function Stats() {
                       최고 점수 <SortIcon k="best" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">
                     참여 게임
                   </th>
                 </tr>
@@ -336,14 +336,14 @@ export default function Stats() {
                     >
                       <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
                       <td className="px-4 py-3.5 font-medium">
-                        <span className="flex items-center gap-1.5 flex-nowrap min-w-0">
+                        <span className="flex items-center gap-1.5">
                           {member.id === myMemberId && (
-                            <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>
                           )}
-                          <span className="truncate">{member.name}</span>
+                          {member.name}
                           {selectedMemberId === member.id
-                            ? <ChevronUp className="shrink-0 w-3.5 h-3.5 text-blue-400" />
-                            : <ChevronDown className="shrink-0 w-3.5 h-3.5 text-muted-foreground opacity-50" />
+                            ? <ChevronUp className="w-3.5 h-3.5 text-blue-400" />
+                            : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
                           }
                         </span>
                       </td>
