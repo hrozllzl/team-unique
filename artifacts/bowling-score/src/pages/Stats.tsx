@@ -194,8 +194,11 @@ export default function Stats() {
     .map((m, i) => ({ name: m.name, avg: m.avg as number, colorIdx: i }));
 
   const allScores = records.flatMap((r) => r.scores.filter((s): s is number => s !== null));
-  const teamAvg = allScores.length > 0
-    ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
+  const memberAvgs = members
+    .map((m) => getMemberStats(m.id, records).avg)
+    .filter((avg): avg is number => avg !== null);
+  const teamAvg = memberAvgs.length > 0
+    ? Math.round((memberAvgs.reduce((a, b) => a + b, 0) / memberAvgs.length) * 10) / 10
     : null;
 
   const handleSort = (key: SortKey) => {
