@@ -55,25 +55,16 @@ const memberMenus = [
     path: "/stats",
     icon: BarChart2,
     label: "전체 통계 점수",
-    gradientFrom: "from-violet-500",
-    gradientTo: "to-fuchsia-600",
-    shadowColor: "shadow-violet-200",
   },
   {
     path: "/games",
     icon: Calendar,
     label: "게임별 점수",
-    gradientFrom: "from-orange-400",
-    gradientTo: "to-rose-500",
-    shadowColor: "shadow-orange-200",
   },
   {
     path: "/member-list",
     icon: Users,
     label: "회원 목록",
-    gradientFrom: "from-blue-500",
-    gradientTo: "to-cyan-400",
-    shadowColor: "shadow-blue-200",
   },
 ];
 
@@ -239,13 +230,10 @@ export default function Home() {
                 <button
                   key={menu.path}
                   onClick={() => setLocation(menu.path)}
-                  className={`group relative overflow-hidden flex flex-col items-center justify-center gap-3 py-5 px-2 rounded-2xl bg-gradient-to-br ${menu.gradientFrom} ${menu.gradientTo} shadow-lg ${menu.shadowColor} hover:-translate-y-0.5 hover:shadow-xl transition-all duration-150 cursor-pointer active:translate-y-0 active:shadow-md`}
+                  className="flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all duration-150 cursor-pointer"
                 >
-                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" />
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white shadow-inner relative z-10">
-                    <Icon className="w-6 h-6" strokeWidth={2.5} />
-                  </div>
-                  <p className="text-white font-bold text-xs text-center leading-tight relative z-10 px-1">{menu.label}</p>
+                  <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.5} />
+                  <p className="font-bold text-sm text-center leading-tight text-blue-600">{menu.label}</p>
                 </button>
               );
             })}
