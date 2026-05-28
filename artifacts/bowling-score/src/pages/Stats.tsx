@@ -253,10 +253,6 @@ export default function Stats() {
                 <p className="text-xs text-muted-foreground font-medium mb-0.5">우리 팀 평균 점수</p>
                 <p className="text-2xl font-bold text-blue-500 tabular-nums">{teamAvg}<span className="text-sm font-normal text-muted-foreground ml-1">점</span></p>
               </div>
-              <div className="ml-auto text-right">
-                <p className="text-xs text-muted-foreground">전체 게임 수</p>
-                <p className="text-lg font-bold text-foreground tabular-nums">{allScores.length}<span className="text-xs font-normal text-muted-foreground ml-1">게임</span></p>
-              </div>
             </div>
           )}
 
