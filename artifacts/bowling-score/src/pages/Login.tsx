@@ -85,113 +85,121 @@ export default function Login({ onLogin }: LoginProps) {
   const setField = (field: keyof typeof signupData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setSignupData((prev) => ({ ...prev, [field]: e.target.value }));
 
+  const gradientBtn = "w-full text-white font-semibold rounded-full py-3 text-base transition-opacity hover:opacity-90 disabled:opacity-50";
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-2xl mb-4">
-            <Target className="w-7 h-7 text-primary" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-sky-100 rounded-2xl mb-4">
+            <Target className="w-8 h-8 text-blue-500" />
           </div>
-          <h1 className="text-2xl font-bold text-primary">팀 유니크</h1>
-          <p className="text-muted-foreground text-sm mt-1">볼링 점수 관리 시스템</p>
+          <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
+          <p className="text-gray-400 text-sm mt-1">볼링 점수 관리 시스템</p>
         </div>
 
         {mode === "login" && (
-          <div className="bg-white border border-border rounded-2xl shadow-sm p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">아이디</label>
-                <Input placeholder="아이디를 입력하세요" value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)} autoComplete="username" className="rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">비밀번호</label>
-                <Input type="password" placeholder="비밀번호를 입력하세요" value={loginPw}
-                  onChange={(e) => setLoginPw(e.target.value)} autoComplete="current-password" className="rounded-xl" />
-              </div>
-              {loginError && <p className="text-sm text-destructive text-center">{loginError}</p>}
-              <Button type="submit" disabled={loginLoading || !loginId || !loginPw}
-                className="w-full bg-primary text-white rounded-xl gap-2">
-                <LogIn className="w-4 h-4" />
+          <form onSubmit={handleLogin} className="space-y-3">
+            <Input
+              placeholder="아이디"
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
+              autoComplete="username"
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+            />
+            <Input
+              type="password"
+              placeholder="비밀번호"
+              value={loginPw}
+              onChange={(e) => setLoginPw(e.target.value)}
+              autoComplete="current-password"
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+            />
+            {loginError && <p className="text-sm text-destructive text-center pt-1">{loginError}</p>}
+            <div className="pt-1">
+              <button
+                type="submit"
+                disabled={loginLoading || !loginId || !loginPw}
+                className={gradientBtn}
+                style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+              >
                 {loginLoading ? "로그인 중..." : "로그인"}
-              </Button>
-            </form>
-            <div className="mt-4 text-center">
-              <button onClick={() => setMode("signup")}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                계정이 없으신가요? <span className="font-medium text-primary">회원가입</span>
               </button>
             </div>
-          </div>
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                계정이 없으신가요? <span className="font-medium text-indigo-400">회원가입</span>
+              </button>
+            </div>
+          </form>
         )}
 
         {mode === "signup" && (
-          <div className="bg-white border border-border rounded-2xl shadow-sm p-6">
-            <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-primary" /> 회원가입
+          <form onSubmit={handleSignup} className="space-y-3">
+            <h2 className="text-base font-semibold text-gray-700 mb-1 flex items-center gap-2">
+              <UserPlus className="w-4 h-4" /> 회원가입
             </h2>
-            <form onSubmit={handleSignup} className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">아이디</label>
-                <Input placeholder="사용할 아이디" value={signupData.username} onChange={setField("username")} className="rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">비밀번호</label>
-                <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")} className="rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">비밀번호 확인</label>
-                <Input type="password" placeholder="비밀번호 재입력" value={signupData.confirmPw} onChange={setField("confirmPw")} className="rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">이름</label>
-                <Input placeholder="실명 입력" value={signupData.name} onChange={setField("name")} className="rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">전화번호</label>
-                <Input
-                  placeholder="010-0000-0000"
-                  value={signupData.phone}
-                  onChange={(e) => setSignupData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
-                  className="rounded-xl"
-                  inputMode="numeric"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">생년월일</label>
-                <Input
-                  placeholder="1900-01-01"
-                  value={signupData.birthdate}
-                  onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
-                  className="rounded-xl"
-                  inputMode="numeric"
-                />
-              </div>
-              {signupError && <p className="text-sm text-destructive text-center">{signupError}</p>}
-              <Button type="submit" disabled={signupLoading} className="w-full bg-primary text-white rounded-xl gap-2">
-                <UserPlus className="w-4 h-4" />
+            <Input placeholder="아이디" value={signupData.username} onChange={setField("username")}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+            <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+            <Input type="password" placeholder="비밀번호 확인" value={signupData.confirmPw} onChange={setField("confirmPw")}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+            <Input placeholder="이름" value={signupData.name} onChange={setField("name")}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+            <Input
+              placeholder="전화번호 (010-0000-0000)"
+              value={signupData.phone}
+              onChange={(e) => setSignupData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              inputMode="numeric"
+            />
+            <Input
+              placeholder="생년월일 (1900-01-01)"
+              value={signupData.birthdate}
+              onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
+              className="rounded-full border-gray-200 bg-gray-50 h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+              inputMode="numeric"
+            />
+            {signupError && <p className="text-sm text-destructive text-center">{signupError}</p>}
+            <div className="pt-1">
+              <button
+                type="submit"
+                disabled={signupLoading}
+                className={gradientBtn}
+                style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+              >
                 {signupLoading ? "가입 중..." : "가입 신청"}
-              </Button>
-            </form>
-            <div className="mt-4 text-center">
-              <button onClick={() => setMode("login")}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                이미 계정이 있으신가요? <span className="font-medium text-primary">로그인</span>
               </button>
             </div>
-          </div>
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                이미 계정이 있으신가요? <span className="font-medium text-indigo-400">로그인</span>
+              </button>
+            </div>
+          </form>
         )}
 
         {mode === "signup_success" && (
-          <div className="bg-white border border-border rounded-2xl shadow-sm p-8 text-center">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-foreground mb-2">가입 신청 완료!</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              관리자 승인 후 로그인하실 수 있습니다.
-            </p>
-            <Button onClick={() => setMode("login")} variant="outline" className="rounded-xl">
+          <div className="text-center">
+            <CheckCircle className="w-14 h-14 text-green-400 mx-auto mb-4" />
+            <h2 className="text-lg font-bold text-gray-900 mb-2">가입 신청 완료!</h2>
+            <p className="text-sm text-gray-400 mb-8">관리자 승인 후 로그인하실 수 있습니다.</p>
+            <button
+              onClick={() => setMode("login")}
+              className={gradientBtn}
+              style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)" }}
+            >
               로그인 화면으로
-            </Button>
+            </button>
           </div>
         )}
       </div>
