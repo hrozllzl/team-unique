@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import type { UserRole } from "@/context/AuthContext";
+import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
 
 interface LoginProps {
   onLogin: (role: UserRole, userName: string) => void;
@@ -148,12 +149,23 @@ export default function Login({ onLogin }: LoginProps) {
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">전화번호</label>
-                <Input placeholder="010-0000-0000" value={signupData.phone} onChange={setField("phone")} className="rounded-xl" />
+                <Input
+                  placeholder="01012345678"
+                  value={signupData.phone}
+                  onChange={(e) => setSignupData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
+                  className="rounded-xl"
+                  inputMode="numeric"
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">생년월일</label>
-                <input type="date" value={signupData.birthdate} onChange={(e) => setSignupData(p => ({ ...p, birthdate: e.target.value }))}
-                  className="w-full text-sm border border-border rounded-xl px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                <Input
+                  placeholder="19991231"
+                  value={signupData.birthdate}
+                  onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
+                  className="rounded-xl"
+                  inputMode="numeric"
+                />
               </div>
               {signupError && <p className="text-sm text-destructive text-center">{signupError}</p>}
               <Button type="submit" disabled={signupLoading} className="w-full bg-primary text-white rounded-xl gap-2">

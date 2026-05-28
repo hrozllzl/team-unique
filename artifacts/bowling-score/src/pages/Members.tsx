@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useApp } from "@/context/AppContext";
+import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,10 +32,10 @@ export default function Members() {
 
   // Edit member dialog
   const [editOpen, setEditOpen] = useState(false);
-  const [editId, setEditId] = useState("");
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editBirthdate, setEditBirthdate] = useState("");
+  const [editId, setEditId] = useState<string>("");
+  const [editName, setEditName] = useState<string>("");
+  const [editPhone, setEditPhone] = useState<string>("");
+  const [editBirthdate, setEditBirthdate] = useState<string>("");
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -241,12 +242,23 @@ export default function Members() {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">전화번호 (선택)</label>
-              <Input placeholder="010-0000-0000" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className="rounded-xl" />
+              <Input
+                placeholder="01012345678"
+                value={newPhone}
+                onChange={(e) => setNewPhone(String(formatPhone(e.target.value)))}
+                className="rounded-xl"
+                inputMode="numeric"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">생년월일 (선택)</label>
-              <input type="date" value={newBirthdate} onChange={(e) => setNewBirthdate(e.target.value)}
-                className="w-full text-sm border border-border rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary" />
+              <Input
+                placeholder="19991231"
+                value={newBirthdate}
+                onChange={(e) => setNewBirthdate(String(formatBirthdate(e.target.value)))}
+                className="rounded-xl"
+                inputMode="numeric"
+              />
             </div>
           </div>
           <DialogFooter>
@@ -267,12 +279,24 @@ export default function Members() {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">전화번호</label>
-              <Input placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="rounded-xl" />
+              <Input
+                placeholder="01012345678"
+                value={editPhone}
+                onChange={(e) => setEditPhone(String(formatPhone(e.target.value)))}
+                className="rounded-xl"
+                inputMode="numeric"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">생년월일</label>
-              <input type="date" value={editBirthdate} onChange={(e) => setEditBirthdate(e.target.value)}
-                className="w-full text-sm border border-border rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input
+                type="text"
+                placeholder="19991231"
+                value={editBirthdate}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditBirthdate(String(formatBirthdate(e.target.value)))}
+                inputMode="numeric"
+                className="flex h-9 w-full rounded-xl border border-input bg-transparent px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
             </div>
           </div>
           <DialogFooter>
