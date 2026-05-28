@@ -228,12 +228,14 @@ export default function Stats() {
           {chartData.length > 0 && (
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
+              <div className="overflow-x-auto">
+              <div style={{ minWidth: Math.max(320, chartData.length * 56) }}>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={chartData} margin={{ top: 28, right: 10, left: 0, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 10 }}
+                    tick={{ fontSize: 11 }}
                     angle={-45}
                     textAnchor="end"
                     interval={0}
@@ -287,6 +289,8 @@ export default function Stats() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </div>
+              </div>
             </div>
           )}
 
@@ -316,7 +320,7 @@ export default function Stats() {
                       최고 점수 <SortIcon k="best" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
                     참여 게임
                   </th>
                 </tr>
