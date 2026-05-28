@@ -123,17 +123,17 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
         <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm table-fixed">
             <colgroup>
-              <col className="w-24" />
+              <col className="w-28" />
               {Array.from({ length: visibleCount }).map((_, i) => <col key={i} />)}
-              <col className="w-12" />
+              <col className="w-20" />
             </colgroup>
             <thead className="bg-gray-50 border-b border-border">
               <tr>
-                <th className="text-left px-2 py-2 font-medium text-muted-foreground">날짜</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">날짜</th>
                 {Array.from({ length: visibleCount }, (_, i) => (
-                  <th key={i} className="text-center px-1 py-2 font-medium text-muted-foreground">{i + 1}G</th>
+                  <th key={i} className="text-center px-2 py-2 font-medium text-muted-foreground">{i + 1}G</th>
                 ))}
-                <th className="text-center px-1 py-2 font-medium text-muted-foreground">평균</th>
+                <th className="text-center px-4 py-2 font-medium text-muted-foreground">평균</th>
               </tr>
             </thead>
             <tbody>
@@ -141,15 +141,15 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
                 const avg = calcAvg(record.scores);
                 return (
                   <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
-                    <td className="px-2 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
                     {record.scores.slice(0, visibleCount).map((score, idx) => (
-                      <td key={idx} className="px-1 py-2.5 text-center">
+                      <td key={idx} className="px-2 py-2.5 text-center">
                         {score !== null ? (
                           <span className={scoreColor(score) || "text-foreground"}>{score}</span>
                         ) : <span className="text-muted-foreground">–</span>}
                       </td>
                     ))}
-                    <td className={`px-2 py-2.5 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
+                    <td className={`px-4 py-2.5 text-center font-semibold tabular-nums ${avg !== null ? (scoreColor(avg) || "text-blue-500") : ""}`}>
                       {avg !== null ? avg : <span className="text-muted-foreground font-normal">–</span>}
                     </td>
                   </tr>
