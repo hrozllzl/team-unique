@@ -279,8 +279,8 @@ export default function Stats() {
                     {chartData.map((entry) => (
                       <Cell
                         key={entry.name}
-                        fill={BAR_COLORS[entry.colorIdx % BAR_COLORS.length]}
-                        fillOpacity={entry.name === userName ? 1 : 0.75}
+                        fill={entry.name === userName ? "#3b82f6" : "#d1d5db"}
+                        fillOpacity={1}
                       />
                     ))}
                   </Bar>
