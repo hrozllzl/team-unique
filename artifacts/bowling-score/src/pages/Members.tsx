@@ -3,6 +3,7 @@ import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock, Search 
 import { useLocation } from "wouter";
 import { useApp } from "@/context/AppContext";
 import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
+import { formatBirthdateDisplay } from "@/lib/scoreUtils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -148,8 +149,8 @@ export default function Members() {
                   <div>
                     <span className="font-medium text-foreground">{member.name}</span>
                     <div className="flex items-center gap-3 mt-0.5">
-                      {member.birthdate && (
-                        <span className="text-xs text-muted-foreground">{formatBirthdate(member.birthdate)}</span>
+                      {member.birthdate && formatBirthdateDisplay(member.birthdate) && (
+                        <span className="text-xs text-muted-foreground">{formatBirthdateDisplay(member.birthdate)}</span>
                       )}
                       {member.phone && (
                         <span className="text-xs text-muted-foreground">{member.phone}</span>
@@ -201,8 +202,8 @@ export default function Members() {
                         <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">@{account.username}</span>
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        {account.birthdate && (
-                          <span className="text-xs text-muted-foreground">{formatBirthdate(account.birthdate)}</span>
+                        {account.birthdate && formatBirthdateDisplay(account.birthdate) && (
+                          <span className="text-xs text-muted-foreground">{formatBirthdateDisplay(account.birthdate)}</span>
                         )}
                         {account.phone && (
                           <span className="text-xs text-muted-foreground">{account.phone}</span>

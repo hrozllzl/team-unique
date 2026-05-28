@@ -5,10 +5,13 @@ export function scoreColor(score: number | null | undefined): string {
 
 export function formatBirthdateDisplay(bd: string | null | undefined): string | null {
   if (!bd || !bd.trim()) return null;
+  const isLunar = bd.startsWith("음력 ");
+  const datePart = isLunar ? bd.slice(3) : bd;
   try {
-    const d = new Date(bd + "T00:00:00");
+    const d = new Date(datePart + "T00:00:00");
     if (isNaN(d.getTime())) return null;
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    const formatted = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    return isLunar ? `음력 ${formatted}` : `양력 ${formatted}`;
   } catch { return null; }
 }
 
