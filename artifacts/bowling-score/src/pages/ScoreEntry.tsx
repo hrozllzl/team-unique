@@ -50,8 +50,11 @@ export default function ScoreEntry() {
     }));
   };
 
+  const activeMemberIds = new Set(members.map((m) => m.id));
   const duplicateIds = new Set(
-    records.filter((r) => r.date === date).map((r) => r.memberId)
+    records
+      .filter((r) => r.date === date && activeMemberIds.has(r.memberId))
+      .map((r) => r.memberId)
   );
 
   const handleSave = () => {
