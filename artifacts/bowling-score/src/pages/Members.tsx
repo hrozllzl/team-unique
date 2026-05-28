@@ -29,18 +29,35 @@ export default function Members() {
   const handleMigratePasswords = async () => {
     setMigrating(true);
     try {
-      const { data: accounts } = await supabase.from("user_accounts").select("id, password");
-      if (!accounts) { toast({ title: "계정 데이터를 불러오지 못했습니다.", variant: "destructive" }); return; }
-      const toMigrate = accounts.filter((a) => !isHashed(a.password));
+      const { data: accounts, error: selectError } = await supabase
+        .from("user_accounts").select("id, password");
+      if (selectError) {
+        toast({ title: `조회 실패: ${selectError.message}`, variant: "destructive" });
+        return;
+      }
+      if (!accounts || accounts.length === 0) {
+        toast({ title: "계정 데이터가 없습니다.", variant: "destructive" });
+        return;
+      }
+      const toMigrate = accounts.filter((a) => a.password && !isHashed(a.password));
       if (toMigrate.length === 0) {
         toast({ title: "모든 비밀번호가 이미 암호화되어 있습니다." });
         return;
       }
+      let successCount = 0;
+      let failCount = 0;
       for (const account of toMigrate) {
         const hashed = await hashPassword(account.password);
-        await supabase.from("user_accounts").update({ password: hashed }).eq("id", account.id);
+        const { error: updateError } = await supabase
+          .from("user_accounts").update({ password: hashed }).eq("id", account.id);
+        if (updateError) { failCount++; }
+        else { successCount++; }
       }
-      toast({ title: `${toMigrate.length}개 계정의 비밀번호를 암호화했습니다.` });
+      if (failCount > 0) {
+        toast({ title: `${successCount}개 성공, ${failCount}개 실패 — RLS 정책 확인 필요`, variant: "destructive" });
+      } else {
+        toast({ title: `${successCount}개 계정의 비밀번호를 암호화했습니다.` });
+      }
     } finally {
       setMigrating(false);
     }
