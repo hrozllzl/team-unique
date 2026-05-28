@@ -140,9 +140,18 @@ export default function Login({ onLogin }: LoginProps) {
 
         {mode === "signup" && (
           <form onSubmit={handleSignup} className="space-y-3">
-            <h2 className="text-base font-semibold text-gray-700 mb-1 flex items-center gap-2">
-              <UserPlus className="w-4 h-4" /> 회원가입
-            </h2>
+            <div className="flex items-center gap-2 mb-1">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+              >
+                ←
+              </button>
+              <h2 className="text-base font-semibold text-gray-700 flex items-center gap-2">
+                <UserPlus className="w-4 h-4" /> 회원가입
+              </h2>
+            </div>
             <Input placeholder="아이디" value={signupData.username} onChange={setField("username")}
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
