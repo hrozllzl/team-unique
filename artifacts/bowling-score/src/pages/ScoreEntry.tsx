@@ -106,12 +106,12 @@ export default function ScoreEntry() {
       <div className="flex items-center justify-between mb-4 gap-4">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-foreground whitespace-nowrap">날짜</label>
-          <Input
+          <input
             data-testid="input-date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl w-44"
+            className="text-sm border border-border rounded-xl px-3 py-1.5 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary w-44"
           />
         </div>
         <Button
