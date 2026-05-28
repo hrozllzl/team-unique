@@ -336,7 +336,7 @@ export default function Stats() {
                     >
                       <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
                       <td className="px-4 py-3.5 font-medium">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 whitespace-nowrap">
                           {member.id === myMemberId && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>
                           )}
