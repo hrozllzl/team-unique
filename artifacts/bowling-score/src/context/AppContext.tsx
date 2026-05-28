@@ -120,7 +120,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const removeMember = useCallback((id: string) => {
     run(async () => {
       await supabase.from("members").update({ is_deleted: true }).eq("id", id);
-      await supabase.from("user_accounts").update({ member_id: null, status: "pending" }).eq("member_id", id);
+      await supabase.from("user_accounts").delete().eq("member_id", id);
       await refetchAll();
     });
   }, [refetchAll]);
