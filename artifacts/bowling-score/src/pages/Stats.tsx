@@ -200,6 +200,10 @@ export default function Stats() {
   const teamAvg = memberAvgs.length > 0
     ? Math.round((memberAvgs.reduce((a, b) => a + b, 0) / memberAvgs.length) * 10) / 10
     : null;
+  const myAvg = myMemberId ? getMemberStats(myMemberId, records).avg : null;
+  const myDiff = myAvg !== null && teamAvg !== null
+    ? Math.round((myAvg - teamAvg) * 10) / 10
+    : null;
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -248,14 +252,31 @@ export default function Stats() {
       ) : (
         <>
           {teamAvg !== null && (
-            <div className="bg-white border border-border rounded-2xl shadow-sm px-5 py-4 mb-6 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                <BarChart2 className="w-5 h-5 text-blue-500" />
+            <div className="bg-white border border-border rounded-2xl shadow-sm px-5 py-4 mb-6 flex items-stretch gap-3">
+              <div className="flex-1 text-center">
+                <p className="text-xs text-muted-foreground font-medium mb-1">우리 팀 평균</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{teamAvg}<span className="text-sm font-normal text-muted-foreground ml-0.5">점</span></p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-medium mb-0.5">우리 팀 평균 점수</p>
-                <p className="text-2xl font-bold text-blue-500 tabular-nums">{teamAvg}<span className="text-sm font-normal text-muted-foreground ml-1">점</span></p>
-              </div>
+              {myAvg !== null && (
+                <>
+                  <div className="w-px bg-border" />
+                  <div className="flex-1 text-center">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">내 평균</p>
+                    <p className="text-2xl font-bold text-blue-500 tabular-nums">{myAvg}<span className="text-sm font-normal text-muted-foreground ml-0.5">점</span></p>
+                  </div>
+                  {myDiff !== null && (
+                    <>
+                      <div className="w-px bg-border" />
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-muted-foreground font-medium mb-1">팀 평균 대비</p>
+                        <p className={`text-2xl font-bold tabular-nums ${myDiff > 0 ? "text-green-500" : myDiff < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                          {myDiff > 0 ? `+${myDiff}` : myDiff === 0 ? "±0" : myDiff}<span className="text-sm font-normal text-muted-foreground ml-0.5">점</span>
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           )}
 
