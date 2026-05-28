@@ -16,12 +16,22 @@ export default function Layout({ children, onLogout }: LayoutProps) {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-white sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <button
-            onClick={() => setLocation("/")}
-            className="text-primary font-bold text-base hover:opacity-80 transition-opacity"
-          >
-            팀 유니크
-          </button>
+          <div className="flex items-center gap-2">
+            {!isHome && (
+              <button
+                onClick={() => window.history.back()}
+                className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={() => setLocation("/")}
+              className="text-primary font-bold text-base hover:opacity-80 transition-opacity"
+            >
+              팀 유니크
+            </button>
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               {role === "admin" ? (
@@ -32,22 +42,13 @@ export default function Layout({ children, onLogout }: LayoutProps) {
               <span className="font-medium text-foreground">{userName}</span>
             </div>
             {!isHome && (
-              <>
-                <button
-                  onClick={() => window.history.back()}
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  뒤로
-                </button>
-                <button
-                  onClick={() => setLocation("/")}
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Home className="w-4 h-4" />
-                  홈으로
-                </button>
-              </>
+              <button
+                onClick={() => setLocation("/")}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                홈으로
+              </button>
             )}
             <button
               onClick={onLogout}
