@@ -55,31 +55,25 @@ const memberMenus = [
     path: "/stats",
     icon: BarChart2,
     label: "전체 통계 점수",
-    desc: "회원별 평균 점수 및 순위",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    iconColor: "text-purple-500",
-    labelColor: "text-purple-600",
+    gradientFrom: "from-violet-500",
+    gradientTo: "to-fuchsia-600",
+    shadowColor: "shadow-violet-200",
   },
   {
     path: "/games",
     icon: Calendar,
     label: "게임별 점수",
-    desc: "날짜별 점수 기록 목록",
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
-    iconColor: "text-orange-400",
-    labelColor: "text-orange-500",
+    gradientFrom: "from-orange-400",
+    gradientTo: "to-rose-500",
+    shadowColor: "shadow-orange-200",
   },
   {
     path: "/member-list",
     icon: Users,
     label: "회원 목록",
-    desc: "팀원 정보 조회",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    iconColor: "text-blue-500",
-    labelColor: "text-blue-600",
+    gradientFrom: "from-blue-500",
+    gradientTo: "to-cyan-400",
+    shadowColor: "shadow-blue-200",
   },
 ];
 
@@ -245,10 +239,13 @@ export default function Home() {
                 <button
                   key={menu.path}
                   onClick={() => setLocation(menu.path)}
-                  className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
+                  className={`group relative overflow-hidden flex flex-col items-center justify-center gap-3 py-5 px-2 rounded-2xl bg-gradient-to-br ${menu.gradientFrom} ${menu.gradientTo} shadow-lg ${menu.shadowColor} hover:-translate-y-0.5 hover:shadow-xl transition-all duration-150 cursor-pointer active:translate-y-0 active:shadow-md`}
                 >
-                  <Icon className={`w-7 h-7 ${menu.iconColor}`} strokeWidth={1.5} />
-                  <p className={`font-bold text-sm text-center leading-tight ${menu.labelColor}`}>{menu.label}</p>
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white shadow-inner relative z-10">
+                    <Icon className="w-6 h-6" strokeWidth={2.5} />
+                  </div>
+                  <p className="text-white font-bold text-xs text-center leading-tight relative z-10 px-1">{menu.label}</p>
                 </button>
               );
             })}
