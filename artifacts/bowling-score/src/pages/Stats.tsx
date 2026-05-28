@@ -228,8 +228,8 @@ export default function Stats() {
           {chartData.length > 0 && (
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 30 }}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={chartData} margin={{ top: 28, right: 10, left: 0, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis
                     dataKey="name"
@@ -247,14 +247,40 @@ export default function Stats() {
                     formatter={(val: number) => [`${val}점`, "평균"]}
                     cursor={{ fill: "rgba(0,0,0,0.04)" }}
                   />
-                  <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={40} label={{ position: "top", fontSize: 11, formatter: (_: unknown, __: unknown, index: number) => chartData[index]?.name === userName ? "▼ 나" : "" }}>
+                  <Bar
+                    dataKey="avg"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={40}
+                    background={(props: { x?: number; y?: number; width?: number; height?: number; name?: string }) => {
+                      if (props.name !== userName) return <g />;
+                      return (
+                        <rect
+                          x={(props.x ?? 0) - 6}
+                          y={0}
+                          width={(props.width ?? 0) + 12}
+                          height="100%"
+                          fill="#e0f2fe"
+                          rx={6}
+                        />
+                      );
+                    }}
+                    label={(props: { x?: number; y?: number; width?: number; value?: number; index?: number }) => {
+                      const idx = props.index ?? 0;
+                      if (chartData[idx]?.name !== userName) return <g />;
+                      const cx = (props.x ?? 0) + (props.width ?? 0) / 2;
+                      const cy = (props.y ?? 0) - 6;
+                      return (
+                        <text x={cx} y={cy} textAnchor="middle" fontSize={12} fontWeight="bold" fill="#0284c7">
+                          ▼ 나
+                        </text>
+                      );
+                    }}
+                  >
                     {chartData.map((entry) => (
                       <Cell
                         key={entry.name}
-                        fill={entry.name === userName ? "#f97316" : BAR_COLORS[entry.colorIdx % BAR_COLORS.length]}
+                        fill={BAR_COLORS[entry.colorIdx % BAR_COLORS.length]}
                         fillOpacity={entry.name === userName ? 1 : 0.75}
-                        stroke={entry.name === userName ? "#ea580c" : "none"}
-                        strokeWidth={entry.name === userName ? 2 : 0}
                       />
                     ))}
                   </Bar>
