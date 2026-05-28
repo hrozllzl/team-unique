@@ -96,6 +96,16 @@ export default function Games() {
     {} as Record<string, typeof filtered>
   );
 
+  const visibleCountByDate: Record<string, number> = {};
+  for (const date of datesSorted) {
+    visibleCountByDate[date] = grouped[date].reduce((max, record) => {
+      for (let i = record.scores.length - 1; i >= 0; i--) {
+        if (record.scores[i] !== null) return Math.max(max, i + 1);
+      }
+      return max;
+    }, 1);
+  }
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + "T00:00:00");
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -241,7 +251,7 @@ export default function Games() {
                           이름 <SortIcon col="name" />
                         </button>
                       </th>
-                      {Array.from({ length: GAME_COUNT }, (_, i) => (
+                      {Array.from({ length: visibleCountByDate[date] }, (_, i) => (
                         <th key={i} className="text-center px-2 py-2.5 font-medium text-muted-foreground">
                           {i + 1}G
                         </th>
@@ -274,7 +284,7 @@ export default function Games() {
                             {isMe && <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>}
                           </span>
                         </td>
-                        {record.scores.map((score, idx) => (
+                        {record.scores.slice(0, visibleCountByDate[date]).map((score, idx) => (
                           <td key={idx} className="px-2 py-3 text-center tabular-nums">
                             {score !== null ? (
                               <span className={scoreColor(score) || "text-foreground"}>{score}</span>

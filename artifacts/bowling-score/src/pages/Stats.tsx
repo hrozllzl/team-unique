@@ -235,7 +235,7 @@ export default function Stats() {
           {chartData.length > 0 && (
             <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">회원별 평균 점수</h2>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scrollbar-blue pb-1">
               <div style={{ minWidth: chartData.length * 40 }}>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={chartData} margin={{ top: 28, right: 10, left: 0, bottom: 50 }}>
