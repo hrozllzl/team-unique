@@ -38,6 +38,7 @@ export default function Members() {
   const [editName, setEditName] = useState<string>("");
   const [editPhone, setEditPhone] = useState<string>("");
   const [editBirthdate, setEditBirthdate] = useState<string>("");
+  const [editIsLunar, setEditIsLunar] = useState(false);
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -48,13 +49,17 @@ export default function Members() {
   };
 
   const openEdit = (id: string, name: string, phone: string, birthdate: string) => {
-    setEditId(id); setEditName(name); setEditPhone(phone); setEditBirthdate(birthdate);
+    const lunar = birthdate.startsWith("음력 ");
+    setEditId(id); setEditName(name); setEditPhone(phone);
+    setEditBirthdate(lunar ? birthdate.slice(3) : birthdate);
+    setEditIsLunar(lunar);
     setEditOpen(true);
   };
 
   const handleEditSave = () => {
     if (!editName.trim()) return;
-    updateMember(editId, { name: editName.trim(), phone: editPhone, birthdate: editBirthdate });
+    const birthdate = editBirthdate ? (editIsLunar ? `음력 ${editBirthdate}` : editBirthdate) : "";
+    updateMember(editId, { name: editName.trim(), phone: editPhone, birthdate });
     setEditOpen(false);
     toast({ title: "회원 정보가 수정되었습니다." });
   };
@@ -301,6 +306,22 @@ export default function Members() {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">생년월일</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditIsLunar(false)}
+                  className={`flex-1 py-1.5 rounded-xl text-sm font-medium border transition-colors ${!editIsLunar ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-400 border-gray-200"}`}
+                >
+                  양력
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditIsLunar(true)}
+                  className={`flex-1 py-1.5 rounded-xl text-sm font-medium border transition-colors ${editIsLunar ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-400 border-gray-200"}`}
+                >
+                  음력
+                </button>
+              </div>
               <input
                 type="text"
                 placeholder="1900-01-01"
