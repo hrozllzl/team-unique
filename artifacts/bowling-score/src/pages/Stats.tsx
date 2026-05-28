@@ -326,14 +326,14 @@ export default function Stats() {
                     <tr
                       key={member.id}
                       data-testid={`stats-row-${member.id}`}
-                      className={`border-b border-border transition-colors cursor-pointer ${member.id === myMemberId ? "bg-orange-50" : selectedMemberId === member.id ? "bg-gray-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
+                      className={`border-b border-border transition-colors cursor-pointer ${member.id === myMemberId ? "bg-blue-50" : selectedMemberId === member.id ? "bg-gray-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
                       onClick={() => toggleMember(member.id)}
                     >
                       <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
                       <td className="px-4 py-3.5 font-medium">
                         <span className="flex items-center gap-1.5">
                           {member.id === myMemberId && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-xs font-bold leading-none">나</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold leading-none">나</span>
                           )}
                           {member.name}
                           {selectedMemberId === member.id
