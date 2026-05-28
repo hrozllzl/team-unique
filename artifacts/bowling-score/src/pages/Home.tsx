@@ -208,12 +208,12 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-6 pt-10 pb-10">
       {!isMember && (
-        <div className="w-full max-w-2xl mb-8 rounded-2xl bg-white border border-gray-200 px-5 py-4 flex items-center justify-between">
+        <div className="w-full max-w-2xl mb-8 rounded-2xl bg-white border border-gray-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
           <span className="text-gray-800 font-medium">관리자님 안녕하세요</span>
           {pendingCount > 0 ? (
             <button
               onClick={() => setLocation("/members")}
-              className="text-sm text-blue-500 font-semibold hover:underline"
+              className="text-sm text-blue-500 font-semibold hover:underline text-left sm:text-right"
             >
               새로운 가입 요청이 {pendingCount}건 있습니다
             </button>
