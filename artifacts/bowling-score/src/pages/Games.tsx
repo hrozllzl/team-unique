@@ -67,7 +67,10 @@ export default function Games() {
   const getMemberName = (id: string) =>
     members.find((m) => m.id === id)?.name ?? "알 수 없음";
 
-  const withAvg = records.map((r) => ({ ...r, avg: calcAvg(r.scores) }));
+  const activeMemberIds = new Set(members.map((m) => m.id));
+  const withAvg = records
+    .filter((r) => activeMemberIds.has(r.memberId))
+    .map((r) => ({ ...r, avg: calcAvg(r.scores) }));
   const filtered = withAvg.filter((r) => !filterDate || r.date === filterDate);
 
   const datesSorted = [...new Set(filtered.map((r) => r.date))].sort((a, b) =>
