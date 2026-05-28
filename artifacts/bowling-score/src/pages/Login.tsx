@@ -25,6 +25,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [signupData, setSignupData] = useState({
     username: "", password: "", confirmPw: "", name: "", phone: "", birthdate: "",
   });
+  const [isLunar, setIsLunar] = useState(false);
   const [signupError, setSignupError] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
 
@@ -72,7 +73,9 @@ export default function Login({ onLogin }: LoginProps) {
     }
     setSignupLoading(true);
     const { error } = await supabase.from("user_accounts").insert({
-      username, password, name, phone, birthdate, status: "pending",
+      username, password, name, phone,
+      birthdate: isLunar ? `음력 ${birthdate}` : birthdate,
+      status: "pending",
     });
     if (error) {
       setSignupError(error.code === "23505" ? "이미 사용 중인 아이디입니다." : error.message);
@@ -158,13 +161,31 @@ export default function Login({ onLogin }: LoginProps) {
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
               inputMode="numeric"
             />
-            <Input
-              placeholder="생년월일 (1900-01-01)"
-              value={signupData.birthdate}
-              onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
-              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
-              inputMode="numeric"
-            />
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsLunar(false)}
+                  className={`flex-1 py-2 rounded-full text-sm font-medium border transition-colors ${!isLunar ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-400 border-gray-200"}`}
+                >
+                  양력
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLunar(true)}
+                  className={`flex-1 py-2 rounded-full text-sm font-medium border transition-colors ${isLunar ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-400 border-gray-200"}`}
+                >
+                  음력
+                </button>
+              </div>
+              <Input
+                placeholder="생년월일 (1900-01-01)"
+                value={signupData.birthdate}
+                onChange={(e) => setSignupData(p => ({ ...p, birthdate: formatBirthdate(e.target.value) }))}
+                className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
+                inputMode="numeric"
+              />
+            </div>
             {signupError && <p className="text-sm text-destructive text-center">{signupError}</p>}
             <div className="pt-1">
               <button
