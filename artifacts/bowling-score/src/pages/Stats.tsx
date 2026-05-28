@@ -113,15 +113,20 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
       {memberRecords.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-4">아직 참여한 게임 기록이 없습니다.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-sm">
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>
+              <col className="w-24" />
+              <col /><col /><col /><col /><col />
+              <col className="w-12" />
+            </colgroup>
             <thead className="bg-gray-50 border-b border-border">
               <tr>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground">날짜</th>
+                <th className="text-left px-2 py-2 font-medium text-muted-foreground">날짜</th>
                 {[1, 2, 3, 4, 5].map((g) => (
-                  <th key={g} className="text-center px-2 py-2 font-medium text-muted-foreground">{g}G</th>
+                  <th key={g} className="text-center px-1 py-2 font-medium text-muted-foreground">{g}G</th>
                 ))}
-                <th className="text-center px-2 py-2 font-medium text-muted-foreground">평균</th>
+                <th className="text-center px-1 py-2 font-medium text-muted-foreground">평균</th>
               </tr>
             </thead>
             <tbody>
@@ -129,9 +134,9 @@ function MemberDetailPanel({ memberId }: { memberId: string }) {
                 const avg = calcAvg(record.scores);
                 return (
                   <tr key={record.id} className="border-b border-border last:border-0 hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
+                    <td className="px-2 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{formatDateFull(record.date)}</td>
                     {record.scores.map((score, idx) => (
-                      <td key={idx} className="px-2 py-2.5 text-center">
+                      <td key={idx} className="px-1 py-2.5 text-center">
                         {score !== null ? (
                           <span className={scoreColor(score) || "text-foreground"}>{score}</span>
                         ) : <span className="text-muted-foreground">–</span>}
@@ -369,7 +374,7 @@ export default function Stats() {
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-right text-muted-foreground">
-                        {member.gameCount}게임
+                        {member.gameCount}
                       </td>
                     </tr>
                     {selectedMemberId === member.id && (
