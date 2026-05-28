@@ -79,36 +79,6 @@ export default function MemberDetail({ id }: { id: string }) {
 
       <div className="border-b border-border mb-6" />
 
-      {chartData.length >= 2 ? (
-        <div className="bg-white border border-border rounded-2xl shadow-sm p-5 mb-6">
-          <h2 className="text-sm font-semibold text-muted-foreground mb-4">평균 점수 추이</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12 }} width={35} />
-              <Tooltip
-                formatter={(val: number) => [`${val}점`, "평균"]}
-                labelFormatter={(label) => `날짜: ${label}`}
-              />
-              <Line
-                type="monotone"
-                dataKey="avg"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 4, fill: "#3b82f6" }}
-                activeDot={{ r: 6 }}
-                connectNulls={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      ) : chartData.length === 1 ? (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-sm text-blue-600 text-center">
-          게임 기록이 2개 이상일 때 추이 그래프가 표시됩니다.
-        </div>
-      ) : null}
-
       {memberRecords.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <p>아직 참여한 게임 기록이 없습니다.</p>

@@ -231,26 +231,46 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-primary mb-2">팀 유니크</h1>
       <p className="text-muted-foreground mb-8 text-base">메뉴를 선택하세요</p>
 
-      {isMember && <MemberPersonalStats userName={userName} />}
-
-      <div className={`grid gap-6 w-full max-w-2xl ${menus.length === 2 ? "grid-cols-2 max-w-md" : "grid-cols-2 max-w-md"}`}>
-        {menus.map((menu) => {
-          const Icon = menu.icon;
-          return (
-            <button
-              key={menu.path}
-              onClick={() => setLocation(menu.path)}
-              className={`flex flex-col items-center justify-center gap-4 p-10 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
-            >
-              <Icon className={`w-12 h-12 ${menu.iconColor}`} strokeWidth={1.5} />
-              <div className="text-center">
-                <p className={`font-bold text-lg ${menu.labelColor}`}>{menu.label}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">{menu.desc}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {isMember ? (
+        <>
+          {/* 회원: 컴팩트 메뉴 3개 가로 배치 */}
+          <div className="grid grid-cols-3 gap-3 w-full max-w-2xl mb-8">
+            {menus.map((menu) => {
+              const Icon = menu.icon;
+              return (
+                <button
+                  key={menu.path}
+                  onClick={() => setLocation(menu.path)}
+                  className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
+                >
+                  <Icon className={`w-7 h-7 ${menu.iconColor}`} strokeWidth={1.5} />
+                  <p className={`font-bold text-sm text-center leading-tight ${menu.labelColor}`}>{menu.label}</p>
+                </button>
+              );
+            })}
+          </div>
+          <MemberPersonalStats userName={userName} />
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-6 w-full max-w-2xl">
+          {menus.map((menu) => {
+            const Icon = menu.icon;
+            return (
+              <button
+                key={menu.path}
+                onClick={() => setLocation(menu.path)}
+                className={`flex flex-col items-center justify-center gap-4 p-10 rounded-2xl border-2 ${menu.bg} ${menu.border} hover:shadow-md transition-all duration-150 cursor-pointer`}
+              >
+                <Icon className={`w-12 h-12 ${menu.iconColor}`} strokeWidth={1.5} />
+                <div className="text-center">
+                  <p className={`font-bold text-lg ${menu.labelColor}`}>{menu.label}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{menu.desc}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

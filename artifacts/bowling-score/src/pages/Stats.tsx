@@ -295,7 +295,7 @@ export default function Stats() {
                     <tr
                       key={member.id}
                       data-testid={`stats-row-${member.id}`}
-                      className={`border-b border-border transition-colors cursor-pointer ${selectedMemberId === member.id ? "bg-blue-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
+                      className={`border-b border-border transition-colors cursor-pointer ${selectedMemberId === member.id ? "bg-gray-50" : "hover:bg-gray-50"} ${selectedMemberId === member.id ? "" : "last:border-0"}`}
                       onClick={() => toggleMember(member.id)}
                     >
                       <td className="px-4 py-3.5">{rankBadge(idx + 1)}</td>
@@ -327,7 +327,7 @@ export default function Stats() {
                       </td>
                     </tr>
                     {selectedMemberId === member.id && (
-                      <tr key={`${member.id}-detail`} className="border-b border-border last:border-0 bg-blue-50/50">
+                      <tr key={`${member.id}-detail`} className="border-b border-border last:border-0 bg-white">
                         <td colSpan={5} className="px-4 pb-5">
                           <MemberDetailPanel memberId={member.id} />
                         </td>

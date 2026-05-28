@@ -126,7 +126,7 @@ export default function Members() {
               placeholder="이름으로 검색"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 rounded-xl"
+              className="pl-9 rounded-xl bg-white"
             />
           </div>
           {members.filter((m) => m.name.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
