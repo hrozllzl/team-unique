@@ -256,9 +256,9 @@ export default function Stats() {
                       return (
                         <rect
                           x={(props.x ?? 0) - 6}
-                          y={0}
+                          y={props.y ?? 0}
                           width={(props.width ?? 0) + 12}
-                          height="100%"
+                          height={props.height ?? 0}
                           fill="#e0f2fe"
                           rx={6}
                         />
@@ -268,10 +268,10 @@ export default function Stats() {
                       const idx = props.index ?? 0;
                       if (chartData[idx]?.name !== userName) return <g />;
                       const cx = (props.x ?? 0) + (props.width ?? 0) / 2;
-                      const cy = (props.y ?? 0) - 6;
+                      const cy = (props.y ?? 0) - 7;
                       return (
-                        <text x={cx} y={cy} textAnchor="middle" fontSize={12} fontWeight="bold" fill="#0284c7">
-                          ▼ 나
+                        <text x={cx} y={cy} textAnchor="middle" fontSize={13} fontWeight="bold" fill="#0284c7">
+                          ▼
                         </text>
                       );
                     }}
