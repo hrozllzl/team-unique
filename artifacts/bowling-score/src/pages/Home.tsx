@@ -230,7 +230,7 @@ export default function Home() {
                 <button
                   key={menu.path}
                   onClick={() => setLocation(menu.path)}
-                  className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl active:bg-gray-100 transition-colors duration-100 cursor-pointer"
+                  className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl bg-white shadow-sm active:shadow-none active:scale-95 transition-all duration-100 cursor-pointer"
                 >
                   <div className="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center">
                     <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
