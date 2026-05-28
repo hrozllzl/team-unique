@@ -27,9 +27,9 @@ export default function Layout({ children, onLogout }: LayoutProps) {
             )}
             <button
               onClick={() => setLocation("/")}
-              className="text-primary font-bold text-base hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              팀 유니크
+              <img src="/logo.png" alt="팀 유니크" className="h-8 w-auto" />
             </button>
           </div>
           <div className="flex items-center gap-3">
