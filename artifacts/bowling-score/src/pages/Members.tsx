@@ -138,11 +138,8 @@ export default function Members() {
         ) : (
           <div className="space-y-3">
             {members.filter((m) => m.name.toLowerCase().includes(search.toLowerCase())).map((member) => (
-              <div key={member.id} className="flex items-center justify-between px-4 py-3.5 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all group">
-                <div
-                  className="flex items-center gap-3 flex-1 cursor-pointer"
-                  onClick={() => setLocation(`/members/${member.id}`)}
-                >
+              <div key={member.id} className="flex items-center justify-between px-4 py-3.5 bg-white border border-border rounded-2xl shadow-sm transition-all">
+                <div className="flex items-center gap-3 flex-1">
                   <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm shrink-0">
                     {member.name.charAt(0)}
                   </div>
@@ -159,7 +156,6 @@ export default function Members() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition-colors" onClick={() => setLocation(`/members/${member.id}`)} />
                   <button
                     onClick={() => openEdit(member.id, member.name, member.phone, member.birthdate)}
                     className="text-muted-foreground hover:text-primary transition-colors p-1"
