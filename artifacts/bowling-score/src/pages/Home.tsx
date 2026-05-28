@@ -99,6 +99,23 @@ function MemberPersonalStats({ userName }: { userName: string }) {
     : null;
   const best = allScores.length > 0 ? Math.max(...allScores) : null;
 
+  const memberAvgs = members
+    .map((m) => {
+      const scores = records
+        .filter((r) => r.memberId === m.id)
+        .flatMap((r) => r.scores.filter((s): s is number => s !== null));
+      if (scores.length === 0) return null;
+      return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+    })
+    .filter((avg): avg is number => avg !== null);
+  const teamAvg = memberAvgs.length > 0
+    ? Math.round((memberAvgs.reduce((a, b) => a + b, 0) / memberAvgs.length) * 10) / 10
+    : null;
+
+  const diff = totalAvg !== null && teamAvg !== null
+    ? Math.round((totalAvg - teamAvg) * 10) / 10
+    : null;
+
   return (
     <div className="w-full max-w-2xl mb-8">
       <div className="bg-white border border-border rounded-2xl shadow-sm px-5 py-5 mb-4">
@@ -121,6 +138,27 @@ function MemberPersonalStats({ userName }: { userName: string }) {
             </p>
           </div>
         </div>
+
+        {teamAvg !== null && totalAvg !== null && (
+          <div className="flex items-stretch gap-3 mb-4">
+            <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-center">
+              <p className="text-xs text-muted-foreground mb-1">우리 팀 평균</p>
+              <p className="text-xl font-bold text-foreground tabular-nums">{teamAvg}<span className="text-xs font-normal text-muted-foreground ml-0.5">점</span></p>
+            </div>
+            <div className="flex-1 bg-blue-50 rounded-xl px-4 py-3 text-center">
+              <p className="text-xs text-muted-foreground mb-1">내 평균</p>
+              <p className="text-xl font-bold text-blue-500 tabular-nums">{totalAvg}<span className="text-xs font-normal text-muted-foreground ml-0.5">점</span></p>
+            </div>
+            {diff !== null && (
+              <div className={`flex-1 rounded-xl px-4 py-3 text-center ${diff > 0 ? "bg-green-50" : diff < 0 ? "bg-red-50" : "bg-gray-50"}`}>
+                <p className="text-xs text-muted-foreground mb-1">팀 평균 대비</p>
+                <p className={`text-xl font-bold tabular-nums ${diff > 0 ? "text-green-500" : diff < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                  {diff > 0 ? `+${diff}` : diff === 0 ? "±0" : diff}<span className="text-xs font-normal text-muted-foreground ml-0.5">점</span>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {chartData.length >= 2 ? (
           <>
