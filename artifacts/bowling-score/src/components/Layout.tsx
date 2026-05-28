@@ -14,14 +14,14 @@ export default function Layout({ children, onLogout }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-white sticky top-0 z-10">
+      <header className="bg-black sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 flex items-center justify-center">
               {!isHome && (
                 <button
                   onClick={() => window.history.back()}
-                  className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100 text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -29,23 +29,23 @@ export default function Layout({ children, onLogout }: LayoutProps) {
             </div>
             <button
               onClick={() => setLocation("/")}
-              className="hover:opacity-80 transition-opacity rounded-lg overflow-hidden bg-black px-2 py-0.5"
+              className="hover:opacity-80 transition-opacity"
             >
-              <img src="/logo.png" alt="팀 유니크" className="h-7 w-auto" />
+              <img src="/logo.png" alt="팀 유니크" className="h-8 w-auto" />
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-sm text-white/60">
               {role === "admin" ? (
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
               ) : (
                 <User className="w-3.5 h-3.5 text-blue-400" />
               )}
-              <span className="font-medium text-foreground">{userName}</span>
+              <span className="font-medium text-white/90">{userName}</span>
             </div>
             <button
               onClick={onLogout}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors"
+              className="flex items-center gap-1 text-sm text-white/50 hover:text-red-400 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               로그아웃
