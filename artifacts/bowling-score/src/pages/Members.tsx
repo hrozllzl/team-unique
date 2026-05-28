@@ -32,6 +32,9 @@ export default function Members() {
         <div className="flex items-center gap-2">
           <Users className="w-6 h-6 text-blue-500" />
           <h1 className="text-2xl font-bold text-foreground">회원 관리</h1>
+          <span className="ml-1 inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
+            {members.length}명
+          </span>
         </div>
         <Button
           data-testid="button-open-add-member"
