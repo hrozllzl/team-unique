@@ -91,11 +91,11 @@ export default function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="flex items-center justify-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
+          <p className="text-gray-400 text-sm mt-1 mb-4">볼링 점수 관리 시스템</p>
+          <div className="flex items-center justify-center">
             <img src="/logo.png" alt="팀 유니크 로고" className="w-56 object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
-          <p className="text-gray-400 text-sm mt-1">볼링 점수 관리 시스템</p>
         </div>
 
         {mode === "login" && (
