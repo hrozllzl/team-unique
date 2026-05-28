@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar, Trash2, Pencil, ArrowUp, ArrowUpDown, ChevronDown } from "lucide-react";
 import { useApp, GameRecord } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +27,8 @@ type SortDir = "asc" | "desc";
 
 export default function Games() {
   const { members, records, removeRecord, updateRecord, updateRecordsDate } = useApp();
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
   const { toast } = useToast();
 
   const [filterDate, setFilterDate] = useState("");
@@ -201,20 +204,24 @@ export default function Games() {
                   </h2>
                 </button>
                 <span className="text-xs text-muted-foreground">({grouped[date].length}명)</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); openDateEdit(date); }}
-                  className="text-muted-foreground hover:text-primary transition-colors p-0.5"
-                  title="날짜 수정"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDeletingDate(date); }}
-                  className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
-                  title="날짜 전체 삭제"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openDateEdit(date); }}
+                      className="text-muted-foreground hover:text-primary transition-colors p-0.5"
+                      title="날짜 수정"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeletingDate(date); }}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                      title="날짜 전체 삭제"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
               </div>
               {expandedDates.has(date) && (
               <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
@@ -241,7 +248,7 @@ export default function Games() {
                           평균 <SortIcon col="avg" />
                         </button>
                       </th>
-                      <th className="w-20 px-2 py-2.5" />
+                      {isAdmin && <th className="w-20 px-2 py-2.5" />}
                     </tr>
                   </thead>
                   <tbody>
@@ -271,26 +278,28 @@ export default function Games() {
                             <span className="text-muted-foreground font-normal">–</span>
                           )}
                         </td>
-                        <td className="px-2 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              data-testid={`button-edit-record-${record.id}`}
-                              onClick={() => openEdit(record)}
-                              className="text-muted-foreground hover:text-primary transition-colors p-1"
-                              title="점수 수정"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              data-testid={`button-remove-record-${record.id}`}
-                              onClick={() => removeRecord(record.id)}
-                              className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                              title="삭제"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
+                        {isAdmin && (
+                          <td className="px-2 py-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                data-testid={`button-edit-record-${record.id}`}
+                                onClick={() => openEdit(record)}
+                                className="text-muted-foreground hover:text-primary transition-colors p-1"
+                                title="점수 수정"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                data-testid={`button-remove-record-${record.id}`}
+                                onClick={() => removeRecord(record.id)}
+                                className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                                title="삭제"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

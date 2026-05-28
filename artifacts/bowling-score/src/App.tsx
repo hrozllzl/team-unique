@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider, useApp } from "@/context/AppContext";
+import { AuthContext, type UserRole } from "@/context/AuthContext";
 import Layout from "@/components/Layout";
-import MigrationModal from "@/components/MigrationModal";
 import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Members from "@/pages/Members";
@@ -14,11 +14,13 @@ import ScoreEntry from "@/pages/ScoreEntry";
 import Stats from "@/pages/Stats";
 import Games from "@/pages/Games";
 import NotFound from "@/pages/not-found";
+import MigrationModal from "@/components/MigrationModal";
 
 const queryClient = new QueryClient();
 
-function AppRoutes({ onLogout }: { onLogout: () => void }) {
+function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: UserRole; userName: string }) {
   const { loading } = useApp();
+  const isAdmin = role === "admin";
 
   if (loading) {
     return (
@@ -32,42 +34,54 @@ function AppRoutes({ onLogout }: { onLogout: () => void }) {
   }
 
   return (
-    <>
+    <AuthContext.Provider value={{ role, userName }}>
       <MigrationModal />
       <Layout onLogout={onLogout}>
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/members" component={Members} />
+          <Route path="/stats" component={Stats} />
+          <Route path="/games" component={Games} />
           <Route path="/members/:id">
             {(params) => <MemberDetail id={params.id} />}
           </Route>
-          <Route path="/score-entry" component={ScoreEntry} />
-          <Route path="/stats" component={Stats} />
-          <Route path="/games" component={Games} />
+          {isAdmin && <Route path="/members" component={Members} />}
+          {isAdmin && <Route path="/score-entry" component={ScoreEntry} />}
+          {/* Redirect non-admin access to home */}
+          {!isAdmin && <Route path="/members"><Redirect to="/" /></Route>}
+          {!isAdmin && <Route path="/score-entry"><Redirect to="/" /></Route>}
           <Route component={NotFound} />
         </Switch>
       </Layout>
-    </>
+    </AuthContext.Provider>
   );
 }
 
 function AuthGuard() {
-  const [authed, setAuthed] = useState(
-    () => sessionStorage.getItem("bowling_auth") === "true"
-  );
+  const [authState, setAuthState] = useState<{ role: UserRole; userName: string } | null>(() => {
+    const role = sessionStorage.getItem("bowling_auth_role") as UserRole | null;
+    const userName = sessionStorage.getItem("bowling_auth_name") || "";
+    return role ? { role, userName } : null;
+  });
 
-  if (!authed) {
-    return <Login onLogin={() => setAuthed(true)} />;
+  if (!authState) {
+    return (
+      <Login
+        onLogin={(role, userName) => {
+          setAuthState({ role, userName });
+        }}
+      />
+    );
   }
 
   const handleLogout = () => {
-    sessionStorage.removeItem("bowling_auth");
-    setAuthed(false);
+    sessionStorage.removeItem("bowling_auth_role");
+    sessionStorage.removeItem("bowling_auth_name");
+    setAuthState(null);
   };
 
   return (
     <AppProvider>
-      <AppRoutes onLogout={handleLogout} />
+      <AppRoutes onLogout={handleLogout} role={authState.role} userName={authState.userName} />
     </AppProvider>
   );
 }

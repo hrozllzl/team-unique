@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
-import { Home, LogOut } from "lucide-react";
+import { Home, LogOut, ShieldCheck, User } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,7 @@ interface LayoutProps {
 
 export default function Layout({ children, onLogout }: LayoutProps) {
   const [location, setLocation] = useLocation();
+  const { role, userName } = useAuth();
   const isHome = location === "/";
 
   return (
@@ -21,9 +23,16 @@ export default function Layout({ children, onLogout }: LayoutProps) {
             팀 유니크
           </button>
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              {role === "admin" ? (
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+              ) : (
+                <User className="w-3.5 h-3.5 text-blue-400" />
+              )}
+              <span className="font-medium text-foreground">{userName}</span>
+            </div>
             {!isHome && (
               <button
-                data-testid="button-home"
                 onClick={() => setLocation("/")}
                 className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -32,7 +41,6 @@ export default function Layout({ children, onLogout }: LayoutProps) {
               </button>
             )}
             <button
-              data-testid="button-logout"
               onClick={onLogout}
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors"
             >
