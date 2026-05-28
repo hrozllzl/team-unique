@@ -88,7 +88,7 @@ export default function Login({ onLogin }: LoginProps) {
   const gradientBtn = "w-full text-white font-semibold rounded-full py-3 text-base transition-opacity hover:opacity-90 disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 -mt-16">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-gray-900">팀 유니크</h1>
