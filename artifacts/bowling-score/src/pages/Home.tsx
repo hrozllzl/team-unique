@@ -206,7 +206,7 @@ export default function Home() {
           {pendingCount > 0 ? (
             <button
               onClick={() => setLocation("/members")}
-              className="text-sm text-red-500 font-semibold hover:underline"
+              className="text-sm text-blue-500 font-semibold hover:underline"
             >
               새로운 가입 요청이 {pendingCount}건 있습니다
             </button>
