@@ -41,6 +41,7 @@ interface AppContextType {
   updateRecordsDate: (oldDate: string, newDate: string) => void;
   removeRecord: (id: string) => void;
   addUserAccount: (account: Omit<UserAccount, "id" | "status" | "memberId">) => Promise<{ error?: string }>;
+  updateUserAccount: (id: string, data: { name: string; phone: string; birthdate: string }) => Promise<{ error?: string }>;
   approveUserAccount: (accountId: string) => void;
   rejectUserAccount: (accountId: string) => void;
 }
@@ -241,6 +242,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [refetchAll]);
 
+  const updateUserAccount = useCallback(async (
+    id: string,
+    data: { name: string; phone: string; birthdate: string }
+  ): Promise<{ error?: string }> => {
+    const { error } = await supabase.from("user_accounts").update(data).eq("id", id);
+    if (error) return { error: error.message };
+    await refetchAll();
+    return {};
+  }, [refetchAll]);
+
   const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name, "ko"));
 
   return (
@@ -259,6 +270,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateRecordsDate,
         removeRecord,
         addUserAccount,
+        updateUserAccount,
         approveUserAccount,
         rejectUserAccount,
       }}

@@ -8,7 +8,7 @@ import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
 import { hashPassword, verifyPassword, isHashed } from "@/lib/password";
 
 interface LoginProps {
-  onLogin: (role: UserRole, userName: string) => void;
+  onLogin: (role: UserRole, userName: string, accountId?: string) => void;
 }
 
 type Mode = "login" | "signup" | "signup_success";
@@ -65,7 +65,8 @@ export default function Login({ onLogin }: LoginProps) {
       if (data.status === "approved") {
         sessionStorage.setItem("bowling_auth_role", "member");
         sessionStorage.setItem("bowling_auth_name", data.name);
-        onLogin("member", data.name);
+        sessionStorage.setItem("bowling_auth_account_id", data.id);
+        onLogin("member", data.name, data.id);
       } else {
         setLoginError("가입 승인 대기 중입니다. 관리자 승인 후 이용 가능합니다.");
       }

@@ -14,12 +14,13 @@ import MemberList from "@/pages/MemberList";
 import ScoreEntry from "@/pages/ScoreEntry";
 import Stats from "@/pages/Stats";
 import Games from "@/pages/Games";
+import MyPage from "@/pages/MyPage";
 import NotFound from "@/pages/not-found";
 import MigrationModal from "@/components/MigrationModal";
 
 const queryClient = new QueryClient();
 
-function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: UserRole; userName: string }) {
+function AppRoutes({ onLogout, role, userName, accountId }: { onLogout: () => void; role: UserRole; userName: string; accountId: string | null }) {
   const { loading } = useApp();
   const isAdmin = role === "admin";
 
@@ -35,7 +36,7 @@ function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: U
   }
 
   return (
-    <AuthContext.Provider value={{ role, userName }}>
+    <AuthContext.Provider value={{ role, userName, accountId }}>
       <MigrationModal />
       <Layout onLogout={onLogout}>
         <Switch>
@@ -48,6 +49,7 @@ function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: U
           {isAdmin && <Route path="/members" component={Members} />}
           {isAdmin && <Route path="/score-entry" component={ScoreEntry} />}
           <Route path="/member-list" component={MemberList} />
+          {!isAdmin && <Route path="/mypage" component={MyPage} />}
           {/* Redirect non-admin access to home */}
           {!isAdmin && <Route path="/members"><Redirect to="/" /></Route>}
           {!isAdmin && <Route path="/score-entry"><Redirect to="/" /></Route>}
@@ -59,17 +61,18 @@ function AppRoutes({ onLogout, role, userName }: { onLogout: () => void; role: U
 }
 
 function AuthGuard() {
-  const [authState, setAuthState] = useState<{ role: UserRole; userName: string } | null>(() => {
+  const [authState, setAuthState] = useState<{ role: UserRole; userName: string; accountId: string | null } | null>(() => {
     const role = sessionStorage.getItem("bowling_auth_role") as UserRole | null;
     const userName = sessionStorage.getItem("bowling_auth_name") || "";
-    return role ? { role, userName } : null;
+    const accountId = sessionStorage.getItem("bowling_auth_account_id") || null;
+    return role ? { role, userName, accountId } : null;
   });
 
   if (!authState) {
     return (
       <Login
-        onLogin={(role, userName) => {
-          setAuthState({ role, userName });
+        onLogin={(role, userName, accountId) => {
+          setAuthState({ role, userName, accountId: accountId ?? null });
         }}
       />
     );
@@ -78,12 +81,13 @@ function AuthGuard() {
   const handleLogout = () => {
     sessionStorage.removeItem("bowling_auth_role");
     sessionStorage.removeItem("bowling_auth_name");
+    sessionStorage.removeItem("bowling_auth_account_id");
     setAuthState(null);
   };
 
   return (
     <AppProvider>
-      <AppRoutes onLogout={handleLogout} role={authState.role} userName={authState.userName} />
+      <AppRoutes onLogout={handleLogout} role={authState.role} userName={authState.userName} accountId={authState.accountId} />
     </AppProvider>
   );
 }
