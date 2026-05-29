@@ -42,10 +42,11 @@ export default function ScoreEntry() {
   }, [members]);
 
   const handleScore = (memberId: string, idx: number, val: string) => {
+    const numeric = val.replace(/\D/g, "");
     setRows((prev) => ({
       ...prev,
       [memberId]: {
-        scores: prev[memberId].scores.map((s, i) => (i === idx ? val : s)),
+        scores: prev[memberId].scores.map((s, i) => (i === idx ? numeric : s)),
       },
     }));
   };
@@ -199,6 +200,8 @@ export default function ScoreEntry() {
                           value={score}
                           disabled={isDuplicate}
                           onChange={(e) => handleScore(member.id, idx, e.target.value)}
+                          onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
+                          inputMode="numeric"
                           className="text-center rounded-lg h-8 px-1 w-14 mx-auto [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </td>
