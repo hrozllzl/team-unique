@@ -17,10 +17,12 @@ export default function MyPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", birthdate: "" });
+  const [isLunar, setIsLunar] = useState(false);
 
   useEffect(() => {
     if (account) {
       setForm({ name: account.name, phone: account.phone, birthdate: account.birthdate });
+      setIsLunar(account.birthdate.startsWith("음력"));
     }
   }, [account]);
 
@@ -34,6 +36,7 @@ export default function MyPage() {
 
   const handleEdit = () => {
     setForm({ name: account.name, phone: account.phone, birthdate: account.birthdate });
+    setIsLunar(account.birthdate.startsWith("음력"));
     setEditing(true);
   };
 
@@ -110,16 +113,40 @@ export default function MyPage() {
             <div>
               <p className="text-xs text-muted-foreground mb-1.5 pl-1">생년월일</p>
               {editing ? (
-                <Input
-                  value={form.birthdate.replace(/^(양력|음력)\s/, "")}
-                  onChange={(e) => {
-                    const prefix = form.birthdate.startsWith("음력") ? "음력 " : "양력 ";
-                    setForm((p) => ({ ...p, birthdate: prefix + formatBirthdate(e.target.value) }));
-                  }}
-                  className={fieldClass}
-                  placeholder="1990-01-01"
-                  inputMode="numeric"
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white px-1.5 py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLunar(false);
+                        setForm((p) => ({ ...p, birthdate: "양력 " + p.birthdate.replace(/^(양력|음력)\s/, "") }));
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${!isLunar ? "bg-blue-500 text-white" : "text-gray-400"}`}
+                    >
+                      양력
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLunar(true);
+                        setForm((p) => ({ ...p, birthdate: "음력 " + p.birthdate.replace(/^(양력|음력)\s/, "") }));
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${isLunar ? "bg-blue-500 text-white" : "text-gray-400"}`}
+                    >
+                      음력
+                    </button>
+                  </div>
+                  <Input
+                    value={form.birthdate.replace(/^(양력|음력)\s/, "")}
+                    onChange={(e) => {
+                      const prefix = isLunar ? "음력 " : "양력 ";
+                      setForm((p) => ({ ...p, birthdate: prefix + formatBirthdate(e.target.value) }));
+                    }}
+                    className={fieldClass}
+                    placeholder="1990-01-01"
+                    inputMode="numeric"
+                  />
+                </div>
               ) : (
                 <div className={readonlyClass}>{account.birthdate || "-"}</div>
               )}
