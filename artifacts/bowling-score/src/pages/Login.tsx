@@ -85,6 +85,22 @@ export default function Login({ onLogin }: LoginProps) {
       setSignupError("모든 항목을 입력해 주세요."); return;
     }
     setSignupLoading(true);
+
+    const { data: existing } = await supabase
+      .from("user_accounts")
+      .select("id, member_id, status")
+      .eq("name", name.trim())
+      .eq("status", "approved")
+      .not("member_id", "is", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      setSignupError("이미 가입된 아이디가 있습니다. 관리자에게 문의하세요.");
+      setSignupLoading(false);
+      return;
+    }
+
     const hashed = await hashPassword(password);
     const { error } = await supabase.from("user_accounts").insert({
       username, password: hashed, name, phone,
