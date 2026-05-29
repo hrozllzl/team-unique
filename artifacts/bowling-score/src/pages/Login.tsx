@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, LogIn, UserPlus, CheckCircle } from "lucide-react";
+import { Target, LogIn, UserPlus, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -29,6 +29,8 @@ export default function Login({ onLogin }: LoginProps) {
   const [isLunar, setIsLunar] = useState(false);
   const [signupError, setSignupError] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,10 +194,22 @@ export default function Login({ onLogin }: LoginProps) {
             </h2>
             <Input placeholder="아이디" value={signupData.username} onChange={setField("username")}
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
-            <Input type="password" placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
-              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
-            <Input type="password" placeholder="비밀번호 확인" value={signupData.confirmPw} onChange={setField("confirmPw")}
-              className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+            <div className="relative">
+              <Input type={showPw ? "text" : "password"} placeholder="비밀번호" value={signupData.password} onChange={setField("password")}
+                className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 pr-12 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              <button type="button" onClick={() => setShowPw((v) => !v)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <div className="relative">
+              <Input type={showConfirmPw ? "text" : "password"} placeholder="비밀번호 확인" value={signupData.confirmPw} onChange={setField("confirmPw")}
+                className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 pr-12 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
+              <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
             <Input placeholder="이름" value={signupData.name} onChange={setField("name")}
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300" />
             <Input
