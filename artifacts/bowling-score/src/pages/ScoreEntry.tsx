@@ -105,7 +105,7 @@ export default function ScoreEntry() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
           <ClipboardEdit className="w-5 h-5 text-blue-500" />
@@ -157,7 +157,7 @@ export default function ScoreEntry() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">이름</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-28">이름</th>
                 {Array.from({ length: GAME_COUNT }, (_, i) => (
                   <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-[72px]">
                     {i + 1}G
