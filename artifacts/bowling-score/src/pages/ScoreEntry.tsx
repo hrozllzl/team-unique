@@ -193,16 +193,15 @@ export default function ScoreEntry() {
                       <td key={idx} className="px-1.5 py-2 text-center w-[72px]">
                         <Input
                           data-testid={`input-${member.id}-game${idx + 1}`}
-                          type="number"
-                          min={0}
-                          max={300}
+                          type="text"
                           placeholder="-"
                           value={score}
                           disabled={isDuplicate}
                           onChange={(e) => handleScore(member.id, idx, e.target.value)}
                           onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                           inputMode="numeric"
-                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          pattern="[0-9]*"
+                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto"
                         />
                       </td>
                     ))}
