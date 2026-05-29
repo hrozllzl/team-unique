@@ -148,7 +148,13 @@ export default function MyPage() {
                   />
                 </div>
               ) : (
-                <div className={readonlyClass}>{account.birthdate || "-"}</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white px-1.5 py-1.5">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${!account.birthdate.startsWith("음력") ? "bg-blue-500 text-white" : "text-gray-400"}`}>양력</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${account.birthdate.startsWith("음력") ? "bg-blue-500 text-white" : "text-gray-400"}`}>음력</span>
+                  </div>
+                  <div className={readonlyClass + " flex-1"}>{account.birthdate.replace(/^(양력|음력)\s/, "") || "-"}</div>
+                </div>
               )}
             </div>
 
