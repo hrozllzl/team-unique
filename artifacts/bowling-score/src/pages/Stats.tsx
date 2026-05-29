@@ -16,12 +16,12 @@ function getMemberStats(memberId: string, records: ReturnType<typeof useApp>["re
   const allScores = memberRecords.flatMap((r) =>
     r.scores.filter((s): s is number => s !== null)
   );
-  const gameCount = allScores.length;
+  const gameCount = memberRecords.length;
   const avg =
-    gameCount > 0
-      ? Math.round((allScores.reduce((a, b) => a + b, 0) / gameCount) * 10) / 10
+    allScores.length > 0
+      ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
       : null;
-  const best = gameCount > 0 ? Math.max(...allScores) : null;
+  const best = allScores.length > 0 ? Math.max(...allScores) : null;
   return { gameCount, avg, best };
 }
 
