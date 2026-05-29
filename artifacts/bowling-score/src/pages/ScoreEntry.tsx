@@ -199,7 +199,7 @@ export default function ScoreEntry() {
                           value={score}
                           disabled={isDuplicate}
                           onChange={(e) => handleScore(member.id, idx, e.target.value)}
-                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto"
+                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </td>
                     ))}
