@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   DndContext,
@@ -21,7 +21,10 @@ import { useApp, type Member, type GameRecord } from "@/context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, X, GripVertical, Users, Settings, Shuffle, UserPlus, Plus, Link, Unlink } from "lucide-react";
+import {
+  ArrowLeft, X, GripVertical, Users, Settings, Shuffle, UserPlus,
+  Plus, Link, Unlink, Save, FolderOpen, Trash2, Upload, Pencil, Check,
+} from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type ScoringMethod = "recent" | "average";
@@ -52,6 +55,31 @@ type Team = {
   name: string;
   members: MemberWithScore[];
 };
+
+type SavedTeamResult = {
+  id: string;
+  name: string;
+  savedAt: number;
+  teams: Team[];
+  balancing: BalancingMethod;
+};
+
+const STORAGE_KEY = "bowling_saved_team_results";
+
+function loadSavedResults(): SavedTeamResult[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedResults(results: SavedTeamResult[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+  } catch {}
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function calcTeamAvg(team: Team) {
@@ -85,11 +113,12 @@ function sortByTier(members: MemberWithScore[], numTeams: number): MemberWithSco
 }
 
 // Optimizes teams so that max-min of the given metric stays within maxDiff.
+// maxDiff is now 5 (was 10) for tighter balance.
 function optimizeBalance(
   teams: Team[],
   metric: (t: Team) => number,
-  maxDiff = 10,
-  maxIter = 2000
+  maxDiff = 5,
+  maxIter = 3000
 ): Team[] {
   const result = teams.map((t) => ({ ...t, members: [...t.members] }));
   for (let iter = 0; iter < maxIter; iter++) {
@@ -105,13 +134,11 @@ function optimizeBalance(
     let bestDiff = maxVal - minVal;
     for (let i = 0; i < maxMembers.length; i++) {
       for (let j = 0; j < minMembers.length; j++) {
-        // Temporarily swap and measure
         const tmp = maxMembers[i];
         maxMembers[i] = minMembers[j];
         minMembers[j] = tmp;
         const newValues = result.map(metric);
         const newDiff = Math.max(...newValues) - Math.min(...newValues);
-        // Undo swap
         minMembers[j] = maxMembers[i];
         maxMembers[i] = tmp;
         if (newDiff < bestDiff) {
@@ -197,7 +224,7 @@ function buildTeamsAvg(members: MemberWithScore[], numTeams: number, constraints
     const teamIdx = round % 2 === 0 ? pos : numTeams - 1 - pos;
     teams[teamIdx].members.push(m);
   });
-  return applyConstraints(optimizeBalance(teams, calcTeamAvg), constraints);
+  return applyConstraints(optimizeBalance(teams, calcTeamAvg, 5), constraints);
 }
 
 // Greedy (총점 일치) — optimize by total
@@ -217,7 +244,7 @@ function buildTeamsTotal(members: MemberWithScore[], numTeams: number, constrain
     const candidates = teams.filter((_, i) => totals[i] === minTotal);
     candidates[Math.floor(Math.random() * candidates.length)].members.push(player);
   }
-  return applyConstraints(optimizeBalance(teams, calcTeamTotal), constraints);
+  return applyConstraints(optimizeBalance(teams, calcTeamTotal, 5), constraints);
 }
 
 // ── SortableMemberCard ─────────────────────────────────────────────────────
@@ -318,7 +345,6 @@ function TeamColumn({
         <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground/50 italic py-4">여기에 드롭하세요</div>
       )}
 
-      {/* 팀원 추가 영역 */}
       {needsMore && (
         <div className="mt-1">
           {addingMode && deletedMembers.length > 0 ? (
@@ -356,6 +382,199 @@ function TeamColumn({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── SavedResultsPanel ───────────────────────────────────────────────────────
+function SavedResultsPanel({
+  savedResults,
+  currentTeams,
+  hasBuilt,
+  onSave,
+  onLoad,
+  onDelete,
+  onRename,
+}: {
+  savedResults: SavedTeamResult[];
+  currentTeams: Team[];
+  hasBuilt: boolean;
+  onSave: (name: string) => void;
+  onLoad: (result: SavedTeamResult) => void;
+  onDelete: (id: string) => void;
+  onRename: (id: string, name: string) => void;
+}) {
+  const [saveName, setSaveName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  function handleSave() {
+    const name = saveName.trim();
+    if (!name || currentTeams.length === 0) return;
+    onSave(name);
+    setSaveName("");
+  }
+
+  function startEdit(r: SavedTeamResult) {
+    setEditingId(r.id);
+    setEditName(r.name);
+  }
+
+  function commitEdit(id: string) {
+    const name = editName.trim();
+    if (name) onRename(id, name);
+    setEditingId(null);
+  }
+
+  function formatDate(ts: number) {
+    const d = new Date(ts);
+    const MM = String(d.getMonth() + 1).padStart(2, "0");
+    const DD = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${MM}/${DD} ${hh}:${mm}`;
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* 저장하기 */}
+      <Card className="border-card-border shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+            <Save className="w-4 h-4" />
+            배정 결과 저장
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="저장명 입력"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSave()}
+              className="border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-0"
+            />
+            <button
+              onClick={handleSave}
+              disabled={!saveName.trim() || !hasBuilt}
+              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+              title="현재 배정 저장"
+            >
+              저장
+            </button>
+          </div>
+          {!hasBuilt && (
+            <p className="text-xs text-muted-foreground mt-1.5">팀 배정 후 저장할 수 있습니다</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 저장된 목록 */}
+      <Card className="border-card-border shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+            <FolderOpen className="w-4 h-4" />
+            저장된 배정
+            <Badge variant="secondary" className="text-xs ml-auto">{savedResults.length}개</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {savedResults.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">저장된 배정이 없습니다</p>
+          ) : (
+            <div className="space-y-2 max-h-[calc(100vh-380px)] overflow-y-auto pr-0.5">
+              {savedResults.map((r) => (
+                <div key={r.id} className="rounded-lg border border-card-border bg-muted/10 overflow-hidden">
+                  {/* 헤더 행 */}
+                  <div className="flex items-center gap-1.5 px-2.5 py-2">
+                    {editingId === r.id ? (
+                      <>
+                        <input
+                          autoFocus
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") commitEdit(r.id);
+                            if (e.key === "Escape") setEditingId(null);
+                          }}
+                          className="flex-1 border border-input rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring min-w-0"
+                        />
+                        <button
+                          onClick={() => commitEdit(r.id)}
+                          className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors shrink-0"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                          className="flex-1 text-left min-w-0"
+                        >
+                          <p className="text-sm font-semibold truncate">{r.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(r.savedAt)} · {r.teams.length}팀 · {r.teams.reduce((s, t) => s + t.members.length, 0)}명</p>
+                        </button>
+                        <button
+                          onClick={() => startEdit(r)}
+                          className="w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                          title="이름 수정"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => onLoad(r)}
+                          className="w-6 h-6 rounded flex items-center justify-center text-primary hover:bg-primary/10 transition-colors shrink-0"
+                          title="불러오기"
+                        >
+                          <Upload className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(r.id)}
+                          className="w-6 h-6 rounded flex items-center justify-center text-rose-400 hover:bg-rose-50 transition-colors shrink-0"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* 팀 미리보기 (펼쳐지면) */}
+                  {expandedId === r.id && (
+                    <div className="border-t border-card-border px-2.5 pb-2.5 pt-2 space-y-1.5">
+                      {r.teams.map((t) => (
+                        <div key={t.id} className="rounded-md bg-background border border-card-border px-2 py-1.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold">{t.name}</span>
+                            <span className="text-xs text-primary font-medium">평균 {calcTeamAvg(t)}점</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {t.members.map((m) => (
+                              <span key={m.member.id} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                                {m.member.name} <span className="text-muted-foreground">{Math.round(m.score)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => { onLoad(r); setExpandedId(null); }}
+                        className="w-full mt-1 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
+                      >
+                        <Upload className="w-3 h-3" />
+                        이 배정으로 불러오기
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -401,7 +620,6 @@ export default function TeamBuilder() {
   const [overId, setOverId] = useState<string | null>(null);
   const [hasBuilt, setHasBuilt] = useState(false);
 
-  // Per-team target size and deleted pool
   const [perTeamTarget, setPerTeamTarget] = useState(0);
   const [deletedFromTeam, setDeletedFromTeam] = useState<MemberWithScore[]>([]);
   const [addingToTeamId, setAddingToTeamId] = useState<string | null>(null);
@@ -414,9 +632,15 @@ export default function TeamBuilder() {
   // Constraints
   const [constraints, setConstraints] = useState<TeamConstraint[]>([]);
 
+  // Saved results
+  const [savedResults, setSavedResults] = useState<SavedTeamResult[]>(() => loadSavedResults());
+
+  useEffect(() => {
+    persistSavedResults(savedResults);
+  }, [savedResults]);
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
-  // Regular member scores
   const regularMemberScores = useMemo((): MemberWithScore[] => {
     return members
       .filter((m) => !excludedIds.has(m.id))
@@ -427,7 +651,6 @@ export default function TeamBuilder() {
       .sort((a, b) => a.member.name.localeCompare(b.member.name, "ko"));
   }, [members, records, excludedIds, scoring]);
 
-  // Guest scores
   const guestScores = useMemo((): MemberWithScore[] => {
     return guests
       .filter((g) => !excludedIds.has(g.id))
@@ -438,7 +661,6 @@ export default function TeamBuilder() {
       }));
   }, [guests, excludedIds]);
 
-  // All participants
   const memberScores = useMemo(
     () => [...regularMemberScores, ...guestScores],
     [regularMemberScores, guestScores]
@@ -490,7 +712,6 @@ export default function TeamBuilder() {
     const built = balancing === "avg"
       ? buildTeamsAvg(memberScores, n, validConstraints)
       : buildTeamsTotal(memberScores, n, validConstraints);
-    // Sort each team's members by score desc
     const sorted = built.map((t) => ({ ...t, members: sortByScore(t.members) }));
     setTeams(sorted);
     setBuildCount((c) => c + 1);
@@ -500,7 +721,37 @@ export default function TeamBuilder() {
     setAddingToTeamId(null);
   }
 
-  // Delete a member from a team → goes to deleted pool
+  // ── Saved results handlers ──────────────────────────────────────────────
+  function handleSave(name: string) {
+    const newResult: SavedTeamResult = {
+      id: `save-${Date.now()}`,
+      name,
+      savedAt: Date.now(),
+      teams: teams.map((t) => ({ ...t, members: [...t.members] })),
+      balancing,
+    };
+    setSavedResults((prev) => [newResult, ...prev]);
+  }
+
+  function handleLoad(result: SavedTeamResult) {
+    setTeams(result.teams.map((t) => ({ ...t, members: [...t.members] })));
+    setHasBuilt(true);
+    setBuildCount((c) => c + 1);
+    setDeletedFromTeam([]);
+    const totalMembers = result.teams.reduce((s, t) => s + t.members.length, 0);
+    setPerTeamTarget(Math.ceil(totalMembers / result.teams.length));
+    setAddingToTeamId(null);
+  }
+
+  function handleDelete(id: string) {
+    setSavedResults((prev) => prev.filter((r) => r.id !== id));
+  }
+
+  function handleRename(id: string, name: string) {
+    setSavedResults((prev) => prev.map((r) => r.id === id ? { ...r, name } : r));
+  }
+
+  // ── Team manipulation handlers ──────────────────────────────────────────
   const handleDeleteFromTeam = useCallback((teamId: string, memberId: string) => {
     setTeams((prev) => {
       const team = prev.find((t) => t.id === teamId);
@@ -512,7 +763,6 @@ export default function TeamBuilder() {
     });
   }, []);
 
-  // Add a member from deleted pool → into a team, sorted by score
   const handleAddToTeam = useCallback((teamId: string, mws: MemberWithScore) => {
     setDeletedFromTeam((prev) => prev.filter((m) => m.member.id !== mws.member.id));
     setTeams((prev) =>
@@ -556,7 +806,6 @@ export default function TeamBuilder() {
       let targetTeam = findTeamById(overIdStr);
       if (!targetTeam) targetTeam = findTeamByDragId(overIdStr);
 
-      // Same team — re-order → sort by score
       if (!targetTeam || targetTeam.id === sourceTeam.id) {
         setTeams((prev) =>
           prev.map((t) => {
@@ -567,7 +816,6 @@ export default function TeamBuilder() {
         return;
       }
 
-      // Cross-team move → remove from source, add to target, sort both
       setTeams((prev) =>
         prev.map((t) => {
           if (t.id === sourceTeam!.id) {
@@ -602,7 +850,7 @@ export default function TeamBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => setLocation("/")}
@@ -618,7 +866,7 @@ export default function TeamBuilder() {
             {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_260px] gap-6">
             {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
             <div className="space-y-4">
 
@@ -872,8 +1120,8 @@ export default function TeamBuilder() {
               </Card>
             </div>
 
-            {/* ── RIGHT: Team columns ─────────────────────────────────── */}
-            <div className="lg:col-span-2">
+            {/* ── MIDDLE: Team columns ─────────────────────────────────── */}
+            <div>
               {!hasBuilt ? (
                 <div className="h-full flex items-center justify-center min-h-[300px] rounded-2xl border-2 border-dashed border-card-border bg-card">
                   <div className="text-center text-muted-foreground">
@@ -918,6 +1166,19 @@ export default function TeamBuilder() {
                   </DragOverlay>
                 </DndContext>
               )}
+            </div>
+
+            {/* ── RIGHT: Saved results panel ───────────────────────────── */}
+            <div>
+              <SavedResultsPanel
+                savedResults={savedResults}
+                currentTeams={teams}
+                hasBuilt={hasBuilt}
+                onSave={handleSave}
+                onLoad={handleLoad}
+                onDelete={handleDelete}
+                onRename={handleRename}
+              />
             </div>
           </div>
         )}
