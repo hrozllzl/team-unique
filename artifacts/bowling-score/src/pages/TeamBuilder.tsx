@@ -389,29 +389,30 @@ function TeamColumn({
 // ── SavedResultsPanel ───────────────────────────────────────────────────────
 function SavedResultsPanel({
   savedResults,
-  currentTeams,
   hasBuilt,
+  loadedId,
   onSave,
   onLoad,
+  onUpdate,
   onDelete,
   onRename,
 }: {
   savedResults: SavedTeamResult[];
-  currentTeams: Team[];
   hasBuilt: boolean;
+  loadedId: string | null;
   onSave: (name: string) => void;
   onLoad: (result: SavedTeamResult) => void;
+  onUpdate: (id: string) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, name: string) => void;
 }) {
   const [saveName, setSaveName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   function handleSave() {
     const name = saveName.trim();
-    if (!name || currentTeams.length === 0) return;
+    if (!name || !hasBuilt) return;
     onSave(name);
     setSaveName("");
   }
@@ -460,7 +461,7 @@ function SavedResultsPanel({
               onClick={handleSave}
               disabled={!saveName.trim() || !hasBuilt}
               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-              title="현재 배정 저장"
+              title="현재 배정을 새 이름으로 저장"
             >
               저장
             </button>
@@ -485,92 +486,76 @@ function SavedResultsPanel({
             <p className="text-xs text-muted-foreground text-center py-4">저장된 배정이 없습니다</p>
           ) : (
             <div className="space-y-2 max-h-[calc(100vh-380px)] overflow-y-auto pr-0.5">
-              {savedResults.map((r) => (
-                <div key={r.id} className="rounded-lg border border-card-border bg-muted/10 overflow-hidden">
-                  {/* 헤더 행 */}
-                  <div className="flex items-center gap-1.5 px-2.5 py-2">
-                    {editingId === r.id ? (
-                      <>
-                        <input
-                          autoFocus
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") commitEdit(r.id);
-                            if (e.key === "Escape") setEditingId(null);
-                          }}
-                          className="flex-1 border border-input rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring min-w-0"
-                        />
-                        <button
-                          onClick={() => commitEdit(r.id)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors shrink-0"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
-                          className="flex-1 text-left min-w-0"
-                        >
-                          <p className="text-sm font-semibold truncate">{r.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(r.savedAt)} · {r.teams.length}팀 · {r.teams.reduce((s, t) => s + t.members.length, 0)}명</p>
-                        </button>
-                        <button
-                          onClick={() => startEdit(r)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-                          title="이름 수정"
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => onLoad(r)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-primary hover:bg-primary/10 transition-colors shrink-0"
-                          title="불러오기"
-                        >
-                          <Upload className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => onDelete(r.id)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-rose-400 hover:bg-rose-50 transition-colors shrink-0"
-                          title="삭제"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* 팀 미리보기 (펼쳐지면) */}
-                  {expandedId === r.id && (
-                    <div className="border-t border-card-border px-2.5 pb-2.5 pt-2 space-y-1.5">
-                      {r.teams.map((t) => (
-                        <div key={t.id} className="rounded-md bg-background border border-card-border px-2 py-1.5">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold">{t.name}</span>
-                            <span className="text-xs text-primary font-medium">평균 {calcTeamAvg(t)}점</span>
+              {savedResults.map((r) => {
+                const isLoaded = loadedId === r.id;
+                return (
+                  <div
+                    key={r.id}
+                    className={`rounded-lg border overflow-hidden ${isLoaded ? "border-primary/50 bg-primary/5" : "border-card-border bg-muted/10"}`}
+                  >
+                    <div className="flex items-center gap-1.5 px-2.5 py-2">
+                      {editingId === r.id ? (
+                        <>
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") commitEdit(r.id);
+                              if (e.key === "Escape") setEditingId(null);
+                            }}
+                            className="flex-1 border border-input rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring min-w-0"
+                          />
+                          <button
+                            onClick={() => commitEdit(r.id)}
+                            className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors shrink-0"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{r.name}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(r.savedAt)} · {r.teams.length}팀 · {r.teams.reduce((s, t) => s + t.members.length, 0)}명</p>
                           </div>
-                          <div className="flex flex-wrap gap-1">
-                            {t.members.map((m) => (
-                              <span key={m.member.id} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-                                {m.member.name} <span className="text-muted-foreground">{Math.round(m.score)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => { onLoad(r); setExpandedId(null); }}
-                        className="w-full mt-1 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
-                      >
-                        <Upload className="w-3 h-3" />
-                        이 배정으로 불러오기
-                      </button>
+                          <button
+                            onClick={() => startEdit(r)}
+                            className="w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                            title="이름 수정"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          {isLoaded ? (
+                            <button
+                              onClick={() => onUpdate(r.id)}
+                              className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors shrink-0"
+                              title="현재 수정 내용으로 덮어쓰기"
+                            >
+                              <Save className="w-3 h-3" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => onLoad(r)}
+                              className="w-6 h-6 rounded flex items-center justify-center text-primary hover:bg-primary/10 transition-colors shrink-0"
+                              title="불러오기"
+                            >
+                              <Upload className="w-3 h-3" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => onDelete(r.id)}
+                            className="w-6 h-6 rounded flex items-center justify-center text-rose-400 hover:bg-rose-50 transition-colors shrink-0"
+                            title="삭제"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -634,6 +619,7 @@ export default function TeamBuilder() {
 
   // Saved results
   const [savedResults, setSavedResults] = useState<SavedTeamResult[]>(() => loadSavedResults());
+  const [loadedId, setLoadedId] = useState<string | null>(null);
 
   useEffect(() => {
     persistSavedResults(savedResults);
@@ -719,6 +705,7 @@ export default function TeamBuilder() {
     setDeletedFromTeam([]);
     setPerTeamTarget(Math.ceil(memberScores.length / n));
     setAddingToTeamId(null);
+    setLoadedId(null);
   }
 
   // ── Saved results handlers ──────────────────────────────────────────────
@@ -731,6 +718,7 @@ export default function TeamBuilder() {
       balancing,
     };
     setSavedResults((prev) => [newResult, ...prev]);
+    setLoadedId(newResult.id);
   }
 
   function handleLoad(result: SavedTeamResult) {
@@ -741,10 +729,22 @@ export default function TeamBuilder() {
     const totalMembers = result.teams.reduce((s, t) => s + t.members.length, 0);
     setPerTeamTarget(Math.ceil(totalMembers / result.teams.length));
     setAddingToTeamId(null);
+    setLoadedId(result.id);
+  }
+
+  function handleUpdate(id: string) {
+    setSavedResults((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? { ...r, savedAt: Date.now(), teams: teams.map((t) => ({ ...t, members: [...t.members] })) }
+          : r
+      )
+    );
   }
 
   function handleDelete(id: string) {
     setSavedResults((prev) => prev.filter((r) => r.id !== id));
+    if (loadedId === id) setLoadedId(null);
   }
 
   function handleRename(id: string, name: string) {
@@ -1172,10 +1172,11 @@ export default function TeamBuilder() {
             <div>
               <SavedResultsPanel
                 savedResults={savedResults}
-                currentTeams={teams}
                 hasBuilt={hasBuilt}
+                loadedId={loadedId}
                 onSave={handleSave}
                 onLoad={handleLoad}
+                onUpdate={handleUpdate}
                 onDelete={handleDelete}
                 onRename={handleRename}
               />
