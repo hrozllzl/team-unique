@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -62,6 +62,7 @@ function AppRoutes({ onLogout, role, userName, accountId }: { onLogout: () => vo
 }
 
 function AuthGuard() {
+  const [, setLocation] = useLocation();
   const [authState, setAuthState] = useState<{ role: UserRole; userName: string; accountId: string | null } | null>(() => {
     const role = sessionStorage.getItem("bowling_auth_role") as UserRole | null;
     const userName = sessionStorage.getItem("bowling_auth_name") || "";
@@ -73,6 +74,7 @@ function AuthGuard() {
     return (
       <Login
         onLogin={(role, userName, accountId) => {
+          setLocation("/");
           setAuthState({ role, userName, accountId: accountId ?? null });
         }}
       />
@@ -83,6 +85,7 @@ function AuthGuard() {
     sessionStorage.removeItem("bowling_auth_role");
     sessionStorage.removeItem("bowling_auth_name");
     sessionStorage.removeItem("bowling_auth_account_id");
+    setLocation("/");
     setAuthState(null);
   };
 
