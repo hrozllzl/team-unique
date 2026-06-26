@@ -1082,7 +1082,7 @@ export default function TeamBuilder() {
                           key={m}
                           onClick={() => setScoring(m)}
                           className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            scoring === m ? "border border-gray-800 bg-white text-gray-900 font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
+                            scoring === m ? "border border-primary bg-primary/10 text-primary font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
                           }`}
                         >
                           {m === "average" ? "평균 점수" : "최근 점수"}
@@ -1099,7 +1099,7 @@ export default function TeamBuilder() {
                           key={m}
                           onClick={() => setBalancing(m)}
                           className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            balancing === m ? "border border-gray-800 bg-white text-gray-900 font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
+                            balancing === m ? "border border-primary bg-primary/10 text-primary font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
                           }`}
                         >
                           {m === "avg" ? "평균 일치" : "총점 일치"}
