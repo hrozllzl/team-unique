@@ -17,6 +17,8 @@ import Games from "@/pages/Games";
 import MyPage from "@/pages/MyPage";
 import NotFound from "@/pages/not-found";
 import MigrationModal from "@/components/MigrationModal";
+import TeamBuilder from "@/pages/TeamBuilder";
+import ScoreComparison from "@/pages/ScoreComparison";
 
 const queryClient = new QueryClient();
 
@@ -46,13 +48,12 @@ function AppRoutes({ onLogout, role, userName, accountId }: { onLogout: () => vo
           <Route path="/members/:id">
             {(params) => <MemberDetail id={params.id} />}
           </Route>
-          {isAdmin && <Route path="/members" component={Members} />}
-          {isAdmin && <Route path="/score-entry" component={ScoreEntry} />}
+          <Route path="/members">{isAdmin ? <Members /> : <Redirect to="/" />}</Route>
+          <Route path="/score-entry">{isAdmin ? <ScoreEntry /> : <Redirect to="/" />}</Route>
+          <Route path="/team-builder">{isAdmin ? <TeamBuilder /> : <Redirect to="/" />}</Route>
+          <Route path="/score-comparison">{isAdmin ? <ScoreComparison /> : <Redirect to="/" />}</Route>
           <Route path="/member-list" component={MemberList} />
-          {!isAdmin && <Route path="/mypage" component={MyPage} />}
-          {/* Redirect non-admin access to home */}
-          {!isAdmin && <Route path="/members"><Redirect to="/" /></Route>}
-          {!isAdmin && <Route path="/score-entry"><Redirect to="/" /></Route>}
+          <Route path="/mypage">{!isAdmin ? <MyPage /> : <Redirect to="/" />}</Route>
           <Route component={NotFound} />
         </Switch>
       </Layout>
