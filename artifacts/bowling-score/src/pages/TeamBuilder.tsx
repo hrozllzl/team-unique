@@ -21,7 +21,7 @@ import { useApp, type Member, type GameRecord } from "@/context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, X, GripVertical, Users, Settings, Shuffle, UserPlus, Plus, Link, Unlink, Trash2 } from "lucide-react";
+import { ArrowLeft, X, GripVertical, Users, Settings, Shuffle, UserPlus, Plus, Link, Unlink } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type ScoringMethod = "recent" | "average";
@@ -62,6 +62,10 @@ function calcTeamTotal(team: Team) {
   return Math.round(team.members.reduce((s, m) => s + m.score, 0));
 }
 
+function sortByScore(members: MemberWithScore[]): MemberWithScore[] {
+  return [...members].sort((a, b) => b.score - a.score);
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -80,33 +84,40 @@ function sortByTier(members: MemberWithScore[], numTeams: number): MemberWithSco
   return result;
 }
 
-// Post-process: swap members between teams to bring avg/total difference within maxDiff.
-function optimizeBalance(teams: Team[], maxDiff = 10, maxIter = 500): Team[] {
+// Optimizes teams so that max-min of the given metric stays within maxDiff.
+function optimizeBalance(
+  teams: Team[],
+  metric: (t: Team) => number,
+  maxDiff = 10,
+  maxIter = 2000
+): Team[] {
   const result = teams.map((t) => ({ ...t, members: [...t.members] }));
   for (let iter = 0; iter < maxIter; iter++) {
-    const avgs = result.map(calcTeamAvg);
-    const maxAvg = Math.max(...avgs);
-    const minAvg = Math.min(...avgs);
-    if (maxAvg - minAvg <= maxDiff) break;
-    const maxIdx = avgs.indexOf(maxAvg);
-    const minIdx = avgs.indexOf(minAvg);
-    let bestSwap: { i: number; j: number } | null = null;
-    let bestDiff = maxAvg - minAvg;
+    const values = result.map(metric);
+    const maxVal = Math.max(...values);
+    const minVal = Math.min(...values);
+    if (maxVal - minVal <= maxDiff) break;
+    const maxIdx = values.indexOf(maxVal);
+    const minIdx = values.indexOf(minVal);
     const maxMembers = result[maxIdx].members;
     const minMembers = result[minIdx].members;
-    const n = maxMembers.length || 1;
-    const m = minMembers.length || 1;
+    let bestSwap: { i: number; j: number } | null = null;
+    let bestDiff = maxVal - minVal;
     for (let i = 0; i < maxMembers.length; i++) {
       for (let j = 0; j < minMembers.length; j++) {
-        const a = maxMembers[i].score;
-        const b = minMembers[j].score;
-        const newMaxAvg = (maxAvg * n - a + b) / n;
-        const newMinAvg = (minAvg * m - b + a) / m;
-        const allAvgs = avgs.map((v, idx) =>
-          idx === maxIdx ? newMaxAvg : idx === minIdx ? newMinAvg : v
-        );
-        const newDiff = Math.max(...allAvgs) - Math.min(...allAvgs);
-        if (newDiff < bestDiff) { bestDiff = newDiff; bestSwap = { i, j }; }
+        // Temporarily swap and measure
+        const tmp = maxMembers[i];
+        maxMembers[i] = minMembers[j];
+        minMembers[j] = tmp;
+        const newValues = result.map(metric);
+        const newDiff = Math.max(...newValues) - Math.min(...newValues);
+        // Undo swap
+        minMembers[j] = maxMembers[i];
+        maxMembers[i] = tmp;
+        if (newDiff < bestDiff) {
+          bestDiff = newDiff;
+          bestSwap = { i, j };
+        }
       }
     }
     if (!bestSwap) break;
@@ -174,7 +185,7 @@ function applyConstraints(teams: Team[], constraints: TeamConstraint[]): Team[] 
   return result;
 }
 
-// Snake-draft (평균 일치)
+// Snake-draft (평균 일치) — optimize by avg
 function buildTeamsAvg(members: MemberWithScore[], numTeams: number, constraints: TeamConstraint[]): Team[] {
   const teams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
     id: `team-${i + 1}`, name: `팀 ${i + 1}`, members: [],
@@ -186,10 +197,10 @@ function buildTeamsAvg(members: MemberWithScore[], numTeams: number, constraints
     const teamIdx = round % 2 === 0 ? pos : numTeams - 1 - pos;
     teams[teamIdx].members.push(m);
   });
-  return applyConstraints(optimizeBalance(teams), constraints);
+  return applyConstraints(optimizeBalance(teams, calcTeamAvg), constraints);
 }
 
-// Greedy (총점 일치)
+// Greedy (총점 일치) — optimize by total
 function buildTeamsTotal(members: MemberWithScore[], numTeams: number, constraints: TeamConstraint[]): Team[] {
   const teams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
     id: `team-${i + 1}`, name: `팀 ${i + 1}`, members: [],
@@ -206,11 +217,21 @@ function buildTeamsTotal(members: MemberWithScore[], numTeams: number, constrain
     const candidates = teams.filter((_, i) => totals[i] === minTotal);
     candidates[Math.floor(Math.random() * candidates.length)].members.push(player);
   }
-  return applyConstraints(optimizeBalance(teams), constraints);
+  return applyConstraints(optimizeBalance(teams, calcTeamTotal), constraints);
 }
 
 // ── SortableMemberCard ─────────────────────────────────────────────────────
-function SortableMemberCard({ mws, teamId, overlay = false }: { mws: MemberWithScore; teamId: string; overlay?: boolean }) {
+function SortableMemberCard({
+  mws,
+  teamId,
+  overlay = false,
+  onDelete,
+}: {
+  mws: MemberWithScore;
+  teamId: string;
+  overlay?: boolean;
+  onDelete?: () => void;
+}) {
   const id = `${teamId}::${mws.member.id}`;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -226,21 +247,50 @@ function SortableMemberCard({ mws, teamId, overlay = false }: { mws: MemberWithS
       <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground">
         <GripVertical className="w-4 h-4" />
       </span>
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
         {mws.member.name[0]}
       </div>
       <span className="flex-1 font-medium">{mws.member.name}{mws.isGuest && <span className="ml-1 text-xs text-amber-500">G</span>}</span>
       <span className={`font-medium ${Math.round(mws.score) >= 200 ? "text-red-500" : "text-muted-foreground"}`}>
         {Math.round(mws.score)}점
       </span>
+      {!overlay && onDelete && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="w-5 h-5 rounded-full flex items-center justify-center bg-rose-100 text-rose-400 hover:bg-rose-200 transition-colors shrink-0"
+          title="팀에서 제거"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
 
 // ── TeamColumn ─────────────────────────────────────────────────────────────
-function TeamColumn({ team, isOver }: { team: Team; isOver: boolean }) {
+function TeamColumn({
+  team,
+  isOver,
+  perTeamTarget,
+  deletedMembers,
+  onDeleteMember,
+  onAddMember,
+  addingMode,
+  onSetAddingMode,
+}: {
+  team: Team;
+  isOver: boolean;
+  perTeamTarget: number;
+  deletedMembers: MemberWithScore[];
+  onDeleteMember: (memberId: string) => void;
+  onAddMember: (mws: MemberWithScore) => void;
+  addingMode: boolean;
+  onSetAddingMode: (v: boolean) => void;
+}) {
   const { setNodeRef } = useDroppable({ id: team.id });
   const itemIds = team.members.map((m) => `${team.id}::${m.member.id}`);
+  const needsMore = perTeamTarget > 0 && team.members.length < perTeamTarget;
+
   return (
     <div
       ref={setNodeRef}
@@ -256,11 +306,55 @@ function TeamColumn({ team, isOver }: { team: Team; isOver: boolean }) {
       </div>
       <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
         {team.members.map((mws) => (
-          <SortableMemberCard key={mws.member.id} mws={mws} teamId={team.id} />
+          <SortableMemberCard
+            key={mws.member.id}
+            mws={mws}
+            teamId={team.id}
+            onDelete={() => onDeleteMember(mws.member.id)}
+          />
         ))}
       </SortableContext>
-      {team.members.length === 0 && (
+      {team.members.length === 0 && !needsMore && (
         <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground/50 italic py-4">여기에 드롭하세요</div>
+      )}
+
+      {/* 팀원 추가 영역 */}
+      {needsMore && (
+        <div className="mt-1">
+          {addingMode && deletedMembers.length > 0 ? (
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground font-medium px-1 mb-1">추가할 회원 선택</p>
+              {deletedMembers.map((mws) => (
+                <button
+                  key={mws.member.id}
+                  onClick={() => { onAddMember(mws); onSetAddingMode(false); }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed border-primary/40 hover:bg-primary/5 text-sm transition-colors"
+                >
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
+                    {mws.member.name[0]}
+                  </div>
+                  <span className="flex-1 font-medium">{mws.member.name}</span>
+                  <span className="text-xs text-muted-foreground">{Math.round(mws.score)}점</span>
+                </button>
+              ))}
+              <button
+                onClick={() => onSetAddingMode(false)}
+                className="w-full py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                취소
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => onSetAddingMode(true)}
+              disabled={deletedMembers.length === 0}
+              className="w-full py-1.5 rounded-lg border border-dashed border-primary/30 text-xs text-primary hover:bg-primary/5 flex items-center justify-center gap-1 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <Plus className="w-3 h-3" />
+              팀원 추가 ({perTeamTarget - team.members.length}명 부족)
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -306,6 +400,11 @@ export default function TeamBuilder() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [hasBuilt, setHasBuilt] = useState(false);
+
+  // Per-team target size and deleted pool
+  const [perTeamTarget, setPerTeamTarget] = useState(0);
+  const [deletedFromTeam, setDeletedFromTeam] = useState<MemberWithScore[]>([]);
+  const [addingToTeamId, setAddingToTeamId] = useState<string | null>(null);
 
   // Guests
   const [guests, setGuests] = useState<GuestMember[]>([]);
@@ -391,10 +490,37 @@ export default function TeamBuilder() {
     const built = balancing === "avg"
       ? buildTeamsAvg(memberScores, n, validConstraints)
       : buildTeamsTotal(memberScores, n, validConstraints);
-    setTeams(built);
+    // Sort each team's members by score desc
+    const sorted = built.map((t) => ({ ...t, members: sortByScore(t.members) }));
+    setTeams(sorted);
     setBuildCount((c) => c + 1);
     setHasBuilt(true);
+    setDeletedFromTeam([]);
+    setPerTeamTarget(Math.ceil(memberScores.length / n));
+    setAddingToTeamId(null);
   }
+
+  // Delete a member from a team → goes to deleted pool
+  const handleDeleteFromTeam = useCallback((teamId: string, memberId: string) => {
+    setTeams((prev) => {
+      const team = prev.find((t) => t.id === teamId);
+      const mws = team?.members.find((m) => m.member.id === memberId);
+      if (mws) setDeletedFromTeam((d) => [...d, mws]);
+      return prev.map((t) =>
+        t.id === teamId ? { ...t, members: t.members.filter((m) => m.member.id !== memberId) } : t
+      );
+    });
+  }, []);
+
+  // Add a member from deleted pool → into a team, sorted by score
+  const handleAddToTeam = useCallback((teamId: string, mws: MemberWithScore) => {
+    setDeletedFromTeam((prev) => prev.filter((m) => m.member.id !== mws.member.id));
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId ? { ...t, members: sortByScore([...t.members, mws]) } : t
+      )
+    );
+  }, []);
 
   function findTeamByDragId(id: string): Team | undefined {
     return teams.find((t) => t.members.some((m) => `${t.id}::${m.member.id}` === id));
@@ -429,37 +555,26 @@ export default function TeamBuilder() {
 
       let targetTeam = findTeamById(overIdStr);
       if (!targetTeam) targetTeam = findTeamByDragId(overIdStr);
+
+      // Same team — re-order → sort by score
       if (!targetTeam || targetTeam.id === sourceTeam.id) {
-        if (!targetTeam) return;
-        const targetMemberId = overIdStr.split("::")[1];
         setTeams((prev) =>
           prev.map((t) => {
             if (t.id !== sourceTeam.id) return t;
-            const newMembers = [...t.members];
-            const fromIdx = newMembers.findIndex((m) => m.member.id === memberId);
-            const toIdx = newMembers.findIndex((m) => m.member.id === targetMemberId);
-            if (fromIdx === -1 || toIdx === -1) return t;
-            const [item] = newMembers.splice(fromIdx, 1);
-            newMembers.splice(toIdx, 0, item);
-            return { ...t, members: newMembers };
+            return { ...t, members: sortByScore(t.members) };
           })
         );
         return;
       }
 
+      // Cross-team move → remove from source, add to target, sort both
       setTeams((prev) =>
         prev.map((t) => {
-          if (t.id === sourceTeam!.id) return { ...t, members: t.members.filter((m) => m.member.id !== memberId) };
+          if (t.id === sourceTeam!.id) {
+            return { ...t, members: sortByScore(t.members.filter((m) => m.member.id !== memberId)) };
+          }
           if (t.id === targetTeam!.id) {
-            const targetMemberId = overIdStr.includes("::") ? overIdStr.split("::")[1] : null;
-            const newMembers = [...t.members];
-            if (targetMemberId) {
-              const toIdx = newMembers.findIndex((m) => m.member.id === targetMemberId);
-              newMembers.splice(toIdx >= 0 ? toIdx : newMembers.length, 0, movingMember!);
-            } else {
-              newMembers.push(movingMember!);
-            }
-            return { ...t, members: newMembers };
+            return { ...t, members: sortByScore([...t.members, movingMember!]) };
           }
           return t;
         })
@@ -483,7 +598,6 @@ export default function TeamBuilder() {
     return findTeamByDragId(overId)?.id || null;
   }, [overId, teams]);
 
-  const inputCls = "border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring w-full";
   const selectCls = "border border-input rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer";
 
   return (
@@ -518,7 +632,6 @@ export default function TeamBuilder() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-                  {/* Regular members */}
                   {members.map((member) => {
                     const excluded = excludedIds.has(member.id);
                     return (
@@ -544,7 +657,6 @@ export default function TeamBuilder() {
                       </div>
                     );
                   })}
-                  {/* Guests */}
                   {guests.map((guest) => {
                     const excluded = excludedIds.has(guest.id);
                     return (
@@ -573,7 +685,7 @@ export default function TeamBuilder() {
                           className="w-5 h-5 rounded-full flex items-center justify-center bg-rose-100 text-rose-400 hover:bg-rose-200 transition-colors"
                           title="게스트 삭제"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     );
@@ -786,7 +898,17 @@ export default function TeamBuilder() {
                     }`}
                   >
                     {teams.map((team) => (
-                      <TeamColumn key={team.id} team={team} isOver={overTeamId === team.id} />
+                      <TeamColumn
+                        key={team.id}
+                        team={team}
+                        isOver={overTeamId === team.id}
+                        perTeamTarget={perTeamTarget}
+                        deletedMembers={deletedFromTeam}
+                        onDeleteMember={(memberId) => handleDeleteFromTeam(team.id, memberId)}
+                        onAddMember={(mws) => handleAddToTeam(team.id, mws)}
+                        addingMode={addingToTeamId === team.id}
+                        onSetAddingMode={(v) => setAddingToTeamId(v ? team.id : null)}
+                      />
                     ))}
                   </div>
                   <DragOverlay>
