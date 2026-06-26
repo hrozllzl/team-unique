@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 
-import { Users, ClipboardEdit, BarChart2, Calendar } from "lucide-react";
+import { Users, ClipboardEdit, BarChart2, Calendar, Shuffle, TrendingUp } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -32,6 +32,18 @@ const adminMenus = [
     icon: Calendar,
     label: "게임별 점수",
     desc: "날짜별 점수 기록 목록",
+  },
+  {
+    path: "/team-builder",
+    icon: Shuffle,
+    label: "팀 짜기",
+    desc: "균형 잡힌 팀 구성",
+  },
+  {
+    path: "/score-comparison",
+    icon: TrendingUp,
+    label: "점수 비교",
+    desc: "기간별 회원 평균 비교",
   },
 ];
 

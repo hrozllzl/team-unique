@@ -131,7 +131,7 @@ export default function ScoreEntry() {
           data-testid="button-save-all"
           onClick={handleSave}
           disabled={members.length === 0}
-          className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl gap-1.5"
+          className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl gap-1.5"
         >
           <Save className="w-4 h-4" />
           전체 저장
@@ -180,7 +180,7 @@ export default function ScoreEntry() {
                   >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-semibold text-xs shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs shrink-0">
                           {member.name.charAt(0)}
                         </div>
                         <span className="font-medium">{member.name}</span>
@@ -208,7 +208,7 @@ export default function ScoreEntry() {
                     <td className="px-3 py-2.5 text-center w-20">
                       <span
                         className={`tabular-nums font-semibold inline-block w-16 text-center ${
-                          avg === "–" ? "text-muted-foreground font-normal" : "text-teal-600"
+                          avg === "–" ? "text-muted-foreground font-normal" : "text-blue-600"
                         }`}
                       >
                         {avg}
