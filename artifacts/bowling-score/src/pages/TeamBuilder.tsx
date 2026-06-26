@@ -529,7 +529,7 @@ function SavedResultsPanel({
                           {isLoaded ? (
                             <button
                               onClick={() => onUpdate(r.id)}
-                              className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors shrink-0"
+                              className="w-6 h-6 rounded flex items-center justify-center text-green-600 hover:bg-green-100 hover:text-green-700 transition-colors shrink-0"
                               title="현재 수정 내용으로 덮어쓰기"
                             >
                               <Save className="w-3 h-3" />
@@ -1082,7 +1082,7 @@ export default function TeamBuilder() {
                           key={m}
                           onClick={() => setScoring(m)}
                           className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            scoring === m ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-secondary-foreground hover:bg-muted"
+                            scoring === m ? "border border-gray-800 bg-white text-gray-900 font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
                           }`}
                         >
                           {m === "average" ? "평균 점수" : "최근 점수"}
@@ -1099,7 +1099,7 @@ export default function TeamBuilder() {
                           key={m}
                           onClick={() => setBalancing(m)}
                           className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            balancing === m ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-secondary-foreground hover:bg-muted"
+                            balancing === m ? "border border-gray-800 bg-white text-gray-900 font-semibold" : "border border-transparent bg-secondary text-secondary-foreground hover:bg-muted"
                           }`}
                         >
                           {m === "avg" ? "평균 일치" : "총점 일치"}
