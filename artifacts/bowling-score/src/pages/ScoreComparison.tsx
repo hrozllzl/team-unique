@@ -241,7 +241,7 @@ export default function ScoreComparison() {
             ) : gameDates.length === 0 ? (
               <p className="text-sm text-muted-foreground">게임 데이터가 없습니다</p>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
                   <PeriodSelector
                     label="기준 기간"
