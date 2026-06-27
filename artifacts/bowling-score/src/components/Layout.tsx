@@ -12,6 +12,12 @@ export default function Layout({ children, onLogout }: LayoutProps) {
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
 
