@@ -36,6 +36,21 @@ export default function Games() {
   const [colSort, setColSort] = useState<ColSort>("avg");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  // Year tabs: default to the year of the most recent record
+  const allYears = [...new Set(records.map((r) => r.date.slice(0, 4)))]
+    .sort((a, b) => b.localeCompare(a));
+  const latestYear = allYears[0] ?? String(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<string>(latestYear);
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    setFilterDate("");
+    const datesInYear = [...new Set(records.map((r) => r.date))]
+      .filter((d) => d.startsWith(year))
+      .sort((a, b) => b.localeCompare(a));
+    setExpandedDates(datesInYear.length > 0 ? new Set([datesInYear[0]]) : new Set());
+  };
+
   // Accordion: only the most recent date starts expanded
   const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
     const dates = [...new Set(records.map((r) => r.date))].sort((a, b) =>
@@ -71,7 +86,11 @@ export default function Games() {
   const withAvg = records
     .filter((r) => activeMemberIds.has(r.memberId))
     .map((r) => ({ ...r, avg: calcAvg(r.scores) }));
-  const filtered = withAvg.filter((r) => !filterDate || r.date === filterDate);
+  const filtered = withAvg.filter(
+    (r) =>
+      r.date.startsWith(selectedYear) &&
+      (!filterDate || r.date === filterDate)
+  );
 
   const datesSorted = [...new Set(filtered.map((r) => r.date))].sort((a, b) =>
     b.localeCompare(a)
@@ -192,6 +211,24 @@ export default function Games() {
           data-testid="filter-date"
         />
       </div>
+
+      {allYears.length > 1 && (
+        <div className="flex gap-2 mb-5 flex-wrap">
+          {allYears.map((year) => (
+            <button
+              key={year}
+              onClick={() => handleYearChange(year)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedYear === year
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {year}년
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="border-b border-border mb-6" />
 
