@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useApp, type Member, type GameRecord } from "@/context/AppContext";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -517,7 +518,8 @@ function SavedResultsPanel({
                         <>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold truncate">{r.name}</p>
-                            <p className="text-xs text-muted-foreground">{formatDate(r.savedAt)} · {r.teams.length}팀 · {r.teams.reduce((s, t) => s + t.members.length, 0)}명</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(r.savedAt)}</p>
+                            <p className="text-xs text-muted-foreground">{r.teams.length}팀 · {r.teams.reduce((s, t) => s + t.members.length, 0)}명</p>
                           </div>
                           <button
                             onClick={() => startEdit(r)}
@@ -594,6 +596,7 @@ function calcMemberScore(
 export default function TeamBuilder() {
   const [, setLocation] = useLocation();
   const { members, records, loading } = useApp();
+  const { toast } = useToast();
 
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [numTeams, setNumTeams] = useState(2);
@@ -730,9 +733,11 @@ export default function TeamBuilder() {
     setPerTeamTarget(Math.ceil(totalMembers / result.teams.length));
     setAddingToTeamId(null);
     setLoadedId(result.id);
+    toast({ title: `'${result.name}' 배정을 불러왔습니다` });
   }
 
   function handleUpdate(id: string) {
+    const target = savedResults.find((r) => r.id === id);
     setSavedResults((prev) =>
       prev.map((r) =>
         r.id === id
@@ -740,6 +745,7 @@ export default function TeamBuilder() {
           : r
       )
     );
+    if (target) toast({ title: `'${target.name}' 배정이 수정되었습니다` });
   }
 
   function handleDelete(id: string) {
