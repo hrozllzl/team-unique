@@ -613,7 +613,6 @@ export default function TeamBuilder() {
   const [guests, setGuests] = useState<GuestMember[]>([]);
   const [guestName, setGuestName] = useState("");
   const [guestScore, setGuestScore] = useState("");
-  const [showGuestForm, setShowGuestForm] = useState(false);
 
   // Constraints
   const [constraints, setConstraints] = useState<TeamConstraint[]>([]);
@@ -948,60 +947,40 @@ export default function TeamBuilder() {
                   <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
                     <UserPlus className="w-4 h-4" />
                     게스트 추가
-                    <button
-                      onClick={() => { setGuestName(""); setGuestScore(""); setShowGuestForm((v) => !v); }}
-                      className="ml-auto flex items-center gap-1 text-xs bg-secondary hover:bg-muted px-2 py-1 rounded-md transition-colors font-medium text-foreground"
-                    >
-                      <Plus className="w-3 h-3" />
-                      추가
-                    </button>
                   </CardTitle>
                 </CardHeader>
-                {showGuestForm && (
-                  <CardContent>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex gap-2 items-center">
-                        <input
-                          autoFocus
-                          type="text"
-                          placeholder="이름"
-                          value={guestName}
-                          onChange={(e) => setGuestName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addGuest()}
-                          className="border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-0"
-                        />
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          placeholder="점수"
-                          value={guestScore}
-                          onChange={(e) => {
-                            const v = e.target.value.replace(/[^0-9]/g, "");
-                            if (v === "" || parseInt(v) <= 300) setGuestScore(v);
-                          }}
-                          onKeyDown={(e) => e.key === "Enter" && addGuest()}
-                          className="border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring w-16 text-center"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => { addGuest(); setShowGuestForm(false); }}
-                          disabled={!guestName.trim() || !guestScore}
-                          className="flex-1 py-1.5 rounded-lg bg-secondary hover:bg-muted text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
-                        >
-                          확인
-                        </button>
-                        <button
-                          onClick={() => setShowGuestForm(false)}
-                          className="flex-1 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          취소
-                        </button>
-                      </div>
-                    </div>
-                  </CardContent>
-                )}
+                <CardContent>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="이름"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && addGuest()}
+                      className="border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-0"
+                    />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="점수"
+                      value={guestScore}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^0-9]/g, "");
+                        if (v === "" || parseInt(v) <= 300) setGuestScore(v);
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && addGuest()}
+                      className="border border-input rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring w-16 text-center"
+                    />
+                    <button
+                      onClick={addGuest}
+                      disabled={!guestName.trim() || !guestScore}
+                      className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
+                    >
+                      추가
+                    </button>
+                  </div>
+                </CardContent>
               </Card>
 
               {/* 조건 설정 */}
