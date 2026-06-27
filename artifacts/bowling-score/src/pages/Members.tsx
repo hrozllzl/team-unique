@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock, Search, ShieldCheck } from "lucide-react";
+import { Users, Trash2, UserPlus, ChevronRight, Pencil, Check, X, Clock, Search } from "lucide-react";
 import { useLocation } from "wouter";
 import { useApp } from "@/context/AppContext";
 import { formatPhone, formatBirthdate } from "@/lib/inputFormat";
@@ -14,8 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-import { hashPassword, isHashed } from "@/lib/password";
+
 
 type Tab = "members" | "pending";
 
@@ -23,45 +22,6 @@ export default function Members() {
   const { members, userAccounts, addMember, removeMember, updateMember, approveUserAccount, rejectUserAccount } = useApp();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-
-  const [migrating, setMigrating] = useState(false);
-
-  const handleMigratePasswords = async () => {
-    setMigrating(true);
-    try {
-      const { data: accounts, error: selectError } = await supabase
-        .from("user_accounts").select("id, password");
-      if (selectError) {
-        toast({ title: `조회 실패: ${selectError.message}`, variant: "destructive" });
-        return;
-      }
-      if (!accounts || accounts.length === 0) {
-        toast({ title: "계정 데이터가 없습니다.", variant: "destructive" });
-        return;
-      }
-      const toMigrate = accounts.filter((a) => a.password && !isHashed(a.password));
-      if (toMigrate.length === 0) {
-        toast({ title: "모든 비밀번호가 이미 암호화되어 있습니다." });
-        return;
-      }
-      let successCount = 0;
-      let failCount = 0;
-      for (const account of toMigrate) {
-        const hashed = await hashPassword(account.password);
-        const { error: updateError } = await supabase
-          .from("user_accounts").update({ password: hashed }).eq("id", account.id);
-        if (updateError) { failCount++; }
-        else { successCount++; }
-      }
-      if (failCount > 0) {
-        toast({ title: `${successCount}개 성공, ${failCount}개 실패 — RLS 정책 확인 필요`, variant: "destructive" });
-      } else {
-        toast({ title: `${successCount}개 계정의 비밀번호를 암호화했습니다.` });
-      }
-    } finally {
-      setMigrating(false);
-    }
-  };
 
   const [tab, setTab] = useState<Tab>("members");
   const [search, setSearch] = useState("");
@@ -129,17 +89,6 @@ export default function Members() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleMigratePasswords}
-            disabled={migrating}
-            className="rounded-xl gap-1.5 text-xs text-gray-500 border-gray-200"
-            title="기존 평문 비밀번호를 bcrypt로 일괄 암호화"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            {migrating ? "암호화 중..." : "비번 암호화"}
-          </Button>
           {tab === "members" && (
             <Button onClick={() => setAddOpen(true)} className="bg-blue-500 hover:bg-blue-600 text-white gap-1.5 rounded-xl">
               <UserPlus className="w-4 h-4" />
