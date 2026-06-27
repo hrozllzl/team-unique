@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Trash2, Pencil, ArrowUp, ArrowUpDown, ChevronDown } from "lucide-react";
+import { Calendar, Trash2, Pencil, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useApp, GameRecord } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -275,41 +275,33 @@ export default function Games() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {datesSorted.map((date) => (
             <div key={date}>
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => toggleDate(date)}
-                  className="flex items-center gap-1.5 group"
-                >
-                  <ChevronDown
-                    className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
-                      expandedDates.has(date) ? "" : "-rotate-90"
-                    }`}
-                  />
-                  <h2 className="text-sm font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-5 rounded-full bg-primary" />
+                  <h2 className="text-base font-bold text-foreground">
                     {formatDate(date)}
                   </h2>
-                </button>
-                <span className="text-xs text-muted-foreground">({grouped[date].length}명)</span>
+                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{grouped[date].length}명</span>
+                </div>
                 {isAdmin && (
-                  <>
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={(e) => { e.stopPropagation(); openDateEdit(date); }}
-                      className="text-muted-foreground hover:text-primary transition-colors p-0.5"
+                      onClick={() => openDateEdit(date)}
+                      className="text-muted-foreground hover:text-primary transition-colors p-1"
                       title="날짜 수정"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setDeletingDate(date); }}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                      onClick={() => setDeletingDate(date)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       title="날짜 전체 삭제"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
-              {expandedDates.has(date) && (
               <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-border">
@@ -398,7 +390,6 @@ export default function Games() {
                   </tbody>
                 </table>
               </div>
-              )}
             </div>
           ))}
         </div>
