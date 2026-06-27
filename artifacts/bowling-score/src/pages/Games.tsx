@@ -41,45 +41,48 @@ export default function Games() {
   const latestYear = allYears[0] ?? String(new Date().getFullYear());
   const [selectedYear, setSelectedYear] = useState<string>(latestYear);
 
-  // Month tabs: default to the latest month in selected year
+  // Month tabs: sorted 1→12 (ascending)
   const getMonthsForYear = (year: string) =>
     [...new Set(records.filter((r) => r.date.startsWith(year)).map((r) => r.date.slice(5, 7)))]
-      .sort((a, b) => b.localeCompare(a));
+      .sort((a, b) => a.localeCompare(b));
 
-  const latestMonth = getMonthsForYear(latestYear)[0] ?? "";
-  const [selectedMonth, setSelectedMonth] = useState<string>(latestMonth);
+  const getDatesInMonth = (year: string, month: string) =>
+    [...new Set(records.map((r) => r.date))]
+      .filter((d) => d.startsWith(`${year}-${month}`));
+
+  // Current year → latest month default; previous years → "01" default
+  const getDefaultMonth = (year: string) => {
+    const months = getMonthsForYear(year);
+    if (months.length === 0) return "";
+    return year === latestYear
+      ? months[months.length - 1]  // latest month
+      : months[0];                 // earliest month (01)
+  };
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => getDefaultMonth(latestYear));
 
   const allMonths = getMonthsForYear(selectedYear);
 
-  const getLatestDateInMonth = (year: string, month: string) => {
-    const dates = [...new Set(records.map((r) => r.date))]
-      .filter((d) => d.startsWith(`${year}-${month}`))
-      .sort((a, b) => b.localeCompare(a));
-    return dates[0] ?? null;
-  };
+  // All dates in current month, expanded by default
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
+    const month = getDefaultMonth(latestYear);
+    const dates = getDatesInMonth(latestYear, month);
+    return new Set(dates);
+  });
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
-    const months = getMonthsForYear(year);
-    const firstMonth = months[0] ?? "";
-    setSelectedMonth(firstMonth);
-    const latestDate = firstMonth ? getLatestDateInMonth(year, firstMonth) : null;
-    setExpandedDates(latestDate ? new Set([latestDate]) : new Set());
+    const defaultMonth = getDefaultMonth(year);
+    setSelectedMonth(defaultMonth);
+    const dates = getDatesInMonth(year, defaultMonth);
+    setExpandedDates(new Set(dates));
   };
 
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
-    const latestDate = getLatestDateInMonth(selectedYear, month);
-    setExpandedDates(latestDate ? new Set([latestDate]) : new Set());
+    const dates = getDatesInMonth(selectedYear, month);
+    setExpandedDates(new Set(dates));
   };
-
-  // Accordion: only the most recent date starts expanded
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
-    const dates = [...new Set(records.map((r) => r.date))].sort((a, b) =>
-      b.localeCompare(a)
-    );
-    return dates.length > 0 ? new Set([dates[0]]) : new Set();
-  });
 
   const toggleDate = (date: string) => {
     setExpandedDates((prev) => {
@@ -114,7 +117,7 @@ export default function Games() {
   );
 
   const datesSorted = [...new Set(filtered.map((r) => r.date))].sort((a, b) =>
-    b.localeCompare(a)
+    a.localeCompare(b)
   );
 
   const sortRows = (rows: typeof filtered) =>
