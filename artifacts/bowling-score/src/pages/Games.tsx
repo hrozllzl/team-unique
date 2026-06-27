@@ -32,7 +32,6 @@ export default function Games() {
   const myMemberId = members.find((m) => m.name === userName)?.id ?? "";
   const { toast } = useToast();
 
-  const [filterDate, setFilterDate] = useState("");
   const [colSort, setColSort] = useState<ColSort>("avg");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -42,13 +41,36 @@ export default function Games() {
   const latestYear = allYears[0] ?? String(new Date().getFullYear());
   const [selectedYear, setSelectedYear] = useState<string>(latestYear);
 
+  // Month tabs: default to the latest month in selected year
+  const getMonthsForYear = (year: string) =>
+    [...new Set(records.filter((r) => r.date.startsWith(year)).map((r) => r.date.slice(5, 7)))]
+      .sort((a, b) => b.localeCompare(a));
+
+  const latestMonth = getMonthsForYear(latestYear)[0] ?? "";
+  const [selectedMonth, setSelectedMonth] = useState<string>(latestMonth);
+
+  const allMonths = getMonthsForYear(selectedYear);
+
+  const getLatestDateInMonth = (year: string, month: string) => {
+    const dates = [...new Set(records.map((r) => r.date))]
+      .filter((d) => d.startsWith(`${year}-${month}`))
+      .sort((a, b) => b.localeCompare(a));
+    return dates[0] ?? null;
+  };
+
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
-    setFilterDate("");
-    const datesInYear = [...new Set(records.map((r) => r.date))]
-      .filter((d) => d.startsWith(year))
-      .sort((a, b) => b.localeCompare(a));
-    setExpandedDates(datesInYear.length > 0 ? new Set([datesInYear[0]]) : new Set());
+    const months = getMonthsForYear(year);
+    const firstMonth = months[0] ?? "";
+    setSelectedMonth(firstMonth);
+    const latestDate = firstMonth ? getLatestDateInMonth(year, firstMonth) : null;
+    setExpandedDates(latestDate ? new Set([latestDate]) : new Set());
+  };
+
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
+    const latestDate = getLatestDateInMonth(selectedYear, month);
+    setExpandedDates(latestDate ? new Set([latestDate]) : new Set());
   };
 
   // Accordion: only the most recent date starts expanded
@@ -86,10 +108,9 @@ export default function Games() {
   const withAvg = records
     .filter((r) => activeMemberIds.has(r.memberId))
     .map((r) => ({ ...r, avg: calcAvg(r.scores) }));
-  const filtered = withAvg.filter(
-    (r) =>
-      r.date.startsWith(selectedYear) &&
-      (!filterDate || r.date === filterDate)
+  const filtered = withAvg.filter((r) =>
+    r.date.startsWith(selectedYear) &&
+    (!selectedMonth || r.date.startsWith(`${selectedYear}-${selectedMonth}`))
   );
 
   const datesSorted = [...new Set(filtered.map((r) => r.date))].sort((a, b) =>
@@ -196,24 +217,15 @@ export default function Games() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-blue-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">게임별 점수</h1>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+          <Calendar className="w-5 h-5 text-blue-500" />
         </div>
-        <input
-          type="date"
-          value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          className="text-sm border border-border rounded-xl px-3 py-1.5 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          data-testid="filter-date"
-        />
+        <h1 className="text-2xl font-bold text-foreground">게임별 점수</h1>
       </div>
 
-      {allYears.length > 1 && (
-        <div className="flex gap-2 mb-5 flex-wrap">
+      {allYears.length > 0 && (
+        <div className="flex gap-2 mb-3 flex-wrap">
           {allYears.map((year) => (
             <button
               key={year}
@@ -230,12 +242,30 @@ export default function Games() {
         </div>
       )}
 
+      {allMonths.length > 0 && (
+        <div className="flex gap-2 mb-5 flex-wrap">
+          {allMonths.map((month) => (
+            <button
+              key={month}
+              onClick={() => handleMonthChange(month)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                selectedMonth === month
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "bg-secondary text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {parseInt(month, 10)}월
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="border-b border-border mb-6" />
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>{filterDate ? "해당 날짜의 기록이 없습니다." : "기록된 점수가 없습니다."}</p>
+          <p>해당 기간의 기록이 없습니다.</p>
           <p className="text-sm mt-1">점수 입력 메뉴에서 점수를 등록해 보세요.</p>
         </div>
       ) : (
