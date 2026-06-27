@@ -138,7 +138,7 @@ export default function ScoreEntry() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-28">이름</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-44">이름</th>
                 {Array.from({ length: GAME_COUNT }, (_, i) => (
                   <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-[72px]">
                     {i + 1}G
@@ -158,7 +158,7 @@ export default function ScoreEntry() {
                     data-testid={`entry-row-${member.id}`}
                     className={`border-b border-border last:border-0 transition-colors ${isDuplicate ? "bg-gray-50 opacity-50" : "hover:bg-gray-50"}`}
                   >
-                    <td className="px-4 py-2.5">
+                    <td className="px-4 py-2.5 w-44">
                       <div className="flex items-center gap-2 whitespace-nowrap">
                         <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs shrink-0">
                           {member.name.charAt(0)}
