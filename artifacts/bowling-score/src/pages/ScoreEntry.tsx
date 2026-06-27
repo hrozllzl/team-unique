@@ -125,7 +125,7 @@ export default function ScoreEntry() {
         </div>
       ) : (
         <div className="relative">
-          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto pb-20">
+          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-border">
                 <tr>
