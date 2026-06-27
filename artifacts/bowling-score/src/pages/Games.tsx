@@ -272,7 +272,7 @@ export default function Games() {
           <p className="text-sm mt-1">점수 입력 메뉴에서 점수를 등록해 보세요.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {datesSorted.map((date) => (
             <div key={date}>
               <div className="flex items-center gap-2 mb-3">
