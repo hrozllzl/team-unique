@@ -124,7 +124,7 @@ export default function ScoreEntry() {
           <p className="text-sm mt-1">회원 관리 메뉴에서 회원을 먼저 추가해 주세요.</p>
         </div>
       ) : (
-        <div className="flex items-end gap-4">
+        <div className="md:flex md:items-end md:gap-4">
           <div className="flex-1 bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-border">
@@ -196,7 +196,7 @@ export default function ScoreEntry() {
             data-testid="button-save-all"
             onClick={handleSave}
             disabled={members.length === 0}
-            className="sticky bottom-6 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors shrink-0"
+            className="fixed bottom-6 right-4 md:static md:sticky md:bottom-6 md:right-auto w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors shrink-0 z-50"
             aria-label="저장"
           >
             <Save className="w-5 h-5" />
