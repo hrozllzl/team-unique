@@ -219,7 +219,7 @@ export default function Games() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
           <Calendar className="w-5 h-5 text-blue-500" />
