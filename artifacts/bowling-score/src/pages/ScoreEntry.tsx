@@ -196,15 +196,19 @@ export default function ScoreEntry() {
       )}
 
       {members.length > 0 && (
-        <button
-          data-testid="button-save-all"
-          onClick={handleSave}
-          disabled={members.length === 0}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors z-50"
-          aria-label="저장"
-        >
-          <Save className="w-5 h-5" />
-        </button>
+        <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none flex justify-center pb-6">
+          <div className="w-full max-w-3xl px-4 flex justify-end">
+            <button
+              data-testid="button-save-all"
+              onClick={handleSave}
+              disabled={members.length === 0}
+              className="pointer-events-auto w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors"
+              aria-label="저장"
+            >
+              <Save className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
