@@ -94,7 +94,7 @@ export default function ScoreEntry() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
           <ClipboardEdit className="w-5 h-5 text-blue-500" />
@@ -159,7 +159,7 @@ export default function ScoreEntry() {
                     className={`border-b border-border last:border-0 transition-colors ${isDuplicate ? "bg-gray-50 opacity-50" : "hover:bg-gray-50"}`}
                   >
                     <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs shrink-0">
                           {member.name.charAt(0)}
                         </div>
