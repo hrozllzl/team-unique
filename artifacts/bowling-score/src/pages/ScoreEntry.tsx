@@ -192,18 +192,19 @@ export default function ScoreEntry() {
             </table>
           </div>
 
-          <div className="sticky bottom-6 flex justify-end mt-3 pointer-events-none">
-            <button
-              data-testid="button-save-all"
-              onClick={handleSave}
-              disabled={members.length === 0}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors"
-              aria-label="저장"
-            >
-              <Save className="w-5 h-5" />
-            </button>
-          </div>
         </div>
+      )}
+
+      {members.length > 0 && (
+        <button
+          data-testid="button-save-all"
+          onClick={handleSave}
+          disabled={members.length === 0}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors z-50"
+          aria-label="저장"
+        >
+          <Save className="w-5 h-5" />
+        </button>
       )}
     </div>
   );
