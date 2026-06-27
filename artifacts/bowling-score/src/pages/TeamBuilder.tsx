@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ArrowLeft, X, GripVertical, Users, Settings, Shuffle, UserPlus,
+  X, GripVertical, Users, Settings, Shuffle, UserPlus,
   Plus, Link, Unlink, Save, FolderOpen, Trash2, Upload, Pencil, Check,
 } from "lucide-react";
 
@@ -857,14 +857,11 @@ export default function TeamBuilder() {
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={() => setLocation("/")}
-            className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <h1 className="text-lg font-bold">팀 짜기</h1>
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+            <Users className="w-5 h-5 text-blue-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">팀 짜기</h1>
         </div>
 
         {loading ? (
