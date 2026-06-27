@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { ClipboardEdit, Save } from "lucide-react";
 import { useApp } from "@/context/AppContext";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
@@ -104,7 +103,7 @@ export default function ScoreEntry() {
 
       <div className="border-b border-border mb-6" />
 
-      <div className="flex items-center justify-between mb-4 gap-4">
+      <div className="flex items-center mb-4 gap-4">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-foreground whitespace-nowrap">날짜</label>
           <input
@@ -115,15 +114,6 @@ export default function ScoreEntry() {
             className="text-sm border border-border rounded-xl px-3 py-1.5 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary w-44"
           />
         </div>
-        <Button
-          data-testid="button-save-all"
-          onClick={handleSave}
-          disabled={members.length === 0}
-          className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl gap-1.5"
-        >
-          <Save className="w-4 h-4" />
-          전체 저장
-        </Button>
       </div>
 
 
@@ -134,71 +124,85 @@ export default function ScoreEntry() {
           <p className="text-sm mt-1">회원 관리 메뉴에서 회원을 먼저 추가해 주세요.</p>
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-44">이름</th>
-                {Array.from({ length: GAME_COUNT }, (_, i) => (
-                  <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-[72px]">
-                    {i + 1}G
-                  </th>
-                ))}
-                <th className="text-center px-3 py-3 font-medium text-muted-foreground w-20">평균</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => {
-                const isDuplicate = duplicateIds.has(member.id);
-                const row = rows[member.id] ?? { scores: Array(GAME_COUNT).fill("") };
-                const avg = calcAvg(row.scores);
-                return (
-                  <tr
-                    key={member.id}
-                    data-testid={`entry-row-${member.id}`}
-                    className={`border-b border-border last:border-0 transition-colors ${isDuplicate ? "bg-gray-50 opacity-50" : "hover:bg-gray-50"}`}
-                  >
-                    <td className="px-4 py-2.5 w-44">
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs shrink-0">
-                          {member.name.charAt(0)}
+        <div className="relative">
+          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-border">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground w-44">이름</th>
+                  {Array.from({ length: GAME_COUNT }, (_, i) => (
+                    <th key={i} className="text-center px-2 py-3 font-medium text-muted-foreground w-[72px]">
+                      {i + 1}G
+                    </th>
+                  ))}
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground w-20">평균</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((member) => {
+                  const isDuplicate = duplicateIds.has(member.id);
+                  const row = rows[member.id] ?? { scores: Array(GAME_COUNT).fill("") };
+                  const avg = calcAvg(row.scores);
+                  return (
+                    <tr
+                      key={member.id}
+                      data-testid={`entry-row-${member.id}`}
+                      className={`border-b border-border last:border-0 transition-colors ${isDuplicate ? "bg-gray-50 opacity-50" : "hover:bg-gray-50"}`}
+                    >
+                      <td className="px-4 py-2.5 w-44">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs shrink-0">
+                            {member.name.charAt(0)}
+                          </div>
+                          <span className="font-medium">{member.name}</span>
+                          {isDuplicate && (
+                            <span className="text-xs text-blue-500 font-medium">입력완료</span>
+                          )}
                         </div>
-                        <span className="font-medium">{member.name}</span>
-                        {isDuplicate && (
-                          <span className="text-xs text-blue-500 font-medium">입력완료</span>
-                        )}
-                      </div>
-                    </td>
-                    {row.scores.map((score, idx) => (
-                      <td key={idx} className="px-1.5 py-2 text-center w-[72px]">
-                        <Input
-                          data-testid={`input-${member.id}-game${idx + 1}`}
-                          type="text"
-                          placeholder="-"
-                          value={score}
-                          disabled={isDuplicate}
-                          onChange={(e) => handleScore(member.id, idx, e.target.value)}
-                          onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          className="text-center rounded-lg h-8 px-1 w-14 mx-auto"
-                        />
                       </td>
-                    ))}
-                    <td className="px-3 py-2.5 text-center w-20">
-                      <span
-                        className={`tabular-nums font-semibold inline-block w-16 text-center ${
-                          avg === "–" ? "text-muted-foreground font-normal" : "text-blue-600"
-                        }`}
-                      >
-                        {avg}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      {row.scores.map((score, idx) => (
+                        <td key={idx} className="px-1.5 py-2 text-center w-[72px]">
+                          <Input
+                            data-testid={`input-${member.id}-game${idx + 1}`}
+                            type="text"
+                            placeholder="-"
+                            value={score}
+                            disabled={isDuplicate}
+                            onChange={(e) => handleScore(member.id, idx, e.target.value)}
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            className="text-center rounded-lg h-8 px-1 w-14 mx-auto"
+                          />
+                        </td>
+                      ))}
+                      <td className="px-3 py-2.5 text-center w-20">
+                        <span
+                          className={`tabular-nums font-semibold inline-block w-16 text-center ${
+                            avg === "–" ? "text-muted-foreground font-normal" : "text-blue-600"
+                          }`}
+                        >
+                          {avg}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="sticky bottom-6 flex justify-end mt-3 pointer-events-none">
+            <button
+              data-testid="button-save-all"
+              onClick={handleSave}
+              disabled={members.length === 0}
+              className="pointer-events-auto w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors"
+              aria-label="저장"
+            >
+              <Save className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       )}
     </div>
