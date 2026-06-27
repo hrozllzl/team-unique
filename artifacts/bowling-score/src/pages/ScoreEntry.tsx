@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ClipboardEdit, Save, AlertCircle } from "lucide-react";
+import { ClipboardEdit, Save } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,15 +79,7 @@ export default function ScoreEntry() {
     const skipped = members.filter((m) => duplicateIds.has(m.id));
 
     if (toSave.length === 0) {
-      if (skipped.length > 0) {
-        toast({
-          title: "저장할 점수가 없습니다.",
-          description: `${skipped.map((m) => m.name).join(", ")}님은 해당 날짜에 이미 기록이 있습니다.`,
-          variant: "destructive",
-        });
-      } else {
-        toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
-      }
+      toast({ title: "입력된 점수가 없습니다.", variant: "destructive" });
       return;
     }
 
@@ -98,11 +90,7 @@ export default function ScoreEntry() {
       )
     );
 
-    const savedNames = toSave.map((r) => members.find((m) => m.id === r.memberId)?.name).filter(Boolean);
-    const msg = skipped.length > 0
-      ? `${savedNames.join(", ")}님 저장 완료. ${skipped.map((m) => m.name).join(", ")}님은 중복으로 건너뜀.`
-      : `${toSave.length}명의 점수가 저장되었습니다!`;
-    toast({ title: msg });
+    toast({ title: `${toSave.length}명의 점수가 저장되었습니다!` });
   };
 
   return (
@@ -138,14 +126,6 @@ export default function ScoreEntry() {
         </Button>
       </div>
 
-      {duplicateIds.size > 0 && (
-        <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-4 text-sm text-blue-700">
-          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-          <span>
-            <strong>{[...duplicateIds].map((id) => members.find((m) => m.id === id)?.name).filter(Boolean).join(", ")}</strong>님은 해당 날짜에 이미 입력 완료된 기록이 있습니다.
-          </span>
-        </div>
-      )}
 
       {members.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
