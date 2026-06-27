@@ -21,6 +21,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [loginPw, setLoginPw] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState(true);
 
   // Signup state
   const [signupData, setSignupData] = useState({
@@ -37,9 +38,11 @@ export default function Login({ onLogin }: LoginProps) {
     setLoginLoading(true);
     setLoginError("");
 
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+
     if (loginId === "team" && loginPw === "unique") {
-      sessionStorage.setItem("bowling_auth_role", "admin");
-      sessionStorage.setItem("bowling_auth_name", "관리자");
+      storage.setItem("bowling_auth_role", "admin");
+      storage.setItem("bowling_auth_name", "관리자");
       onLogin("admin", "관리자");
       setLoginLoading(false);
       return;
@@ -65,9 +68,9 @@ export default function Login({ onLogin }: LoginProps) {
       }
 
       if (data.status === "approved") {
-        sessionStorage.setItem("bowling_auth_role", "member");
-        sessionStorage.setItem("bowling_auth_name", data.name);
-        sessionStorage.setItem("bowling_auth_account_id", data.id);
+        storage.setItem("bowling_auth_role", "member");
+        storage.setItem("bowling_auth_name", data.name);
+        storage.setItem("bowling_auth_account_id", data.id);
         onLogin("member", data.name, data.id);
       } else {
         setLoginError("가입 승인 대기 중입니다. 관리자 승인 후 이용 가능합니다.");
@@ -165,6 +168,18 @@ export default function Login({ onLogin }: LoginProps) {
               className="rounded-full border-gray-200 bg-white shadow-none h-13 px-5 text-base placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-blue-300"
             />
             {loginError && <p className="text-sm text-destructive text-center pt-1">{loginError}</p>}
+            <div className="flex items-center gap-2 px-1 pt-1">
+              <input
+                id="stay-logged-in"
+                type="checkbox"
+                checked={stayLoggedIn}
+                onChange={(e) => setStayLoggedIn(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 accent-blue-500 cursor-pointer"
+              />
+              <label htmlFor="stay-logged-in" className="text-sm text-gray-500 cursor-pointer select-none">
+                로그인 유지
+              </label>
+            </div>
             <div className="pt-1">
               <button
                 type="submit"

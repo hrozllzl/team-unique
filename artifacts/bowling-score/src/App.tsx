@@ -64,9 +64,9 @@ function AppRoutes({ onLogout, role, userName, accountId }: { onLogout: () => vo
 function AuthGuard() {
   const [, setLocation] = useLocation();
   const [authState, setAuthState] = useState<{ role: UserRole; userName: string; accountId: string | null } | null>(() => {
-    const role = sessionStorage.getItem("bowling_auth_role") as UserRole | null;
-    const userName = sessionStorage.getItem("bowling_auth_name") || "";
-    const accountId = sessionStorage.getItem("bowling_auth_account_id") || null;
+    const role = (localStorage.getItem("bowling_auth_role") || sessionStorage.getItem("bowling_auth_role")) as UserRole | null;
+    const userName = localStorage.getItem("bowling_auth_name") || sessionStorage.getItem("bowling_auth_name") || "";
+    const accountId = localStorage.getItem("bowling_auth_account_id") || sessionStorage.getItem("bowling_auth_account_id") || null;
     return role ? { role, userName, accountId } : null;
   });
 
@@ -82,6 +82,9 @@ function AuthGuard() {
   }
 
   const handleLogout = () => {
+    localStorage.removeItem("bowling_auth_role");
+    localStorage.removeItem("bowling_auth_name");
+    localStorage.removeItem("bowling_auth_account_id");
     sessionStorage.removeItem("bowling_auth_role");
     sessionStorage.removeItem("bowling_auth_name");
     sessionStorage.removeItem("bowling_auth_account_id");
