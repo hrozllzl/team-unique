@@ -125,7 +125,7 @@ export default function ScoreEntry() {
         </div>
       ) : (
         <div className="relative">
-          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto">
+          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-x-auto pb-20">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-border">
                 <tr>
@@ -192,22 +192,15 @@ export default function ScoreEntry() {
             </table>
           </div>
 
-        </div>
-      )}
-
-      {members.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none flex justify-center pb-6">
-          <div className="w-full max-w-3xl px-4 flex justify-end">
-            <button
-              data-testid="button-save-all"
-              onClick={handleSave}
-              disabled={members.length === 0}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors"
-              aria-label="저장"
-            >
-              <Save className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            data-testid="button-save-all"
+            onClick={handleSave}
+            disabled={members.length === 0}
+            className="absolute right-4 bottom-4 z-10 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xl flex items-center justify-center disabled:opacity-40 transition-colors"
+            aria-label="저장"
+          >
+            <Save className="w-5 h-5" />
+          </button>
         </div>
       )}
     </div>
