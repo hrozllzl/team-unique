@@ -89,12 +89,13 @@ export default function Members() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {tab === "members" && (
-            <Button onClick={() => setAddOpen(true)} className="bg-blue-500 hover:bg-blue-600 text-white gap-1.5 rounded-xl">
-              <UserPlus className="w-4 h-4" />
-              회원 추가
-            </Button>
-          )}
+          <Button
+            onClick={() => setAddOpen(true)}
+            className={`bg-blue-500 hover:bg-blue-600 text-white gap-1.5 rounded-xl ${tab !== "members" ? "invisible" : ""}`}
+          >
+            <UserPlus className="w-4 h-4" />
+            회원 추가
+          </Button>
         </div>
       </div>
 

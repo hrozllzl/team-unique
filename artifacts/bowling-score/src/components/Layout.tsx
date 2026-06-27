@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { LogOut, ShieldCheck, User, ArrowLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +10,11 @@ interface LayoutProps {
 
 export default function Layout({ children, onLogout }: LayoutProps) {
   const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
   const { role, userName } = useAuth();
   const isHome = location === "/";
 
