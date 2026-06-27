@@ -872,8 +872,8 @@ export default function TeamBuilder() {
             {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_260px] gap-6">
-            {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[220px_220px_1fr_260px] gap-6">
+            {/* ── COL 1: 참여 회원 ─────────────────────────────────────── */}
             <div className="space-y-4">
 
               {/* 참여 회원 */}
@@ -885,7 +885,7 @@ export default function TeamBuilder() {
                     <Badge variant="secondary" className="text-xs ml-auto">{memberScores.length}명</Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                <CardContent className="space-y-1.5">
                   {members.map((member) => {
                     const excluded = excludedIds.has(member.id);
                     return (
@@ -988,6 +988,10 @@ export default function TeamBuilder() {
                   </div>
                 </CardContent>
               </Card>
+
+            </div>
+            {/* ── COL 2: 조건·팀 설정 ──────────────────────────────────── */}
+            <div className="space-y-4">
 
               {/* 조건 설정 */}
               <Card className="border-card-border shadow-sm">
