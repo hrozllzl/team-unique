@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { RotateCcw } from "lucide-react";
+import { useApp } from "@/context/AppContext";
 
-/* ── Ball colours ── */
+/* ── Ball colours (pastel) ── */
 const BALL_DEFS = [
-  { color: "#FFD93D", shine: "#FFF176", shadow: "#F0A500" },
-  { color: "#FF6B9D", shine: "#FFB3CC", shadow: "#C4315A" },
-  { color: "#6BCB77", shine: "#B8F0BC", shadow: "#3A9944" },
-  { color: "#4DD9F0", shine: "#B3EEFA", shadow: "#1BA8C4" },
-  { color: "#B088F9", shine: "#D9C3FF", shadow: "#7A44D8" },
-  { color: "#FF8C42", shine: "#FFBF94", shadow: "#C4560A" },
-  { color: "#F72585", shine: "#FF9FC8", shadow: "#8B0054" },
-  { color: "#7BF1A8", shine: "#C6FFE2", shadow: "#2EAF66" },
+  { color: "#FFE88A", shine: "#FFF7C2", shadow: "#F5C842" },
+  { color: "#FFB3CC", shine: "#FFD9E8", shadow: "#F07099" },
+  { color: "#A8E6B0", shine: "#D4F5D8", shadow: "#6DC97A" },
+  { color: "#A3ECF8", shine: "#D6F7FD", shadow: "#5DD0E8" },
+  { color: "#CEBAF9", shine: "#E8DCFF", shadow: "#A980F0" },
+  { color: "#FFCAA0", shine: "#FFE4CC", shadow: "#F5A06A" },
+  { color: "#FFB3D6", shine: "#FFD9EC", shadow: "#F07EB0" },
+  { color: "#B8F5CE", shine: "#DAFAE8", shadow: "#72DDA0" },
 ];
 
 const BALL_R = 14;
@@ -25,26 +26,49 @@ const GLOBE_BALLS = [
   { cx: 68, cy: 75 },
 ];
 
-const RANGE_MIN = 100;
-const RANGE_MAX = 300;
 type Phase = "idle" | "spinning" | "done";
 
+/* 게임 기록 1건의 유효 점수 평균 (null 제외) */
+function gameAvg(scores: (number | null)[]): number | null {
+  const valid = scores.filter((s): s is number => s !== null);
+  if (valid.length === 0) return null;
+  return Math.floor(valid.reduce((a, b) => a + b, 0) / valid.length);
+}
+
 export default function LuckyDraw() {
-  const [minScore, setMinScore] = useState(100);
-  const [maxScore, setMaxScore] = useState(300);
+  const { records } = useApp();
+
+  /* 전체 게임 기록의 평균 점수들 → 최솟값/최댓값 계산 */
+  const { rangeMin, rangeMax } = useMemo(() => {
+    const avgs = records.map((r) => gameAvg(r.scores)).filter((v): v is number => v !== null);
+    if (avgs.length === 0) return { rangeMin: 100, rangeMax: 300 };
+    return {
+      rangeMin: Math.min(...avgs),
+      rangeMax: Math.max(...avgs),
+    };
+  }, [records]);
+
+  const [minScore, setMinScore] = useState(rangeMin);
+  const [maxScore, setMaxScore] = useState(rangeMax);
   const [drawnNumber, setDrawnNumber] = useState<number | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [showResult, setShowResult] = useState(false);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  /* 데이터 바뀌면 슬라이더 범위 자동 갱신 */
+  useEffect(() => {
+    setMinScore(rangeMin);
+    setMaxScore(rangeMax);
+  }, [rangeMin, rangeMax]);
 
   const isSpinning = phase === "spinning";
   const isDone = phase === "done";
   const canDraw = minScore < maxScore && !isSpinning;
 
   /* 슬라이더 트랙 채우기 퍼센트 */
-  const span = RANGE_MAX - RANGE_MIN;
-  const minPct = ((minScore - RANGE_MIN) / span) * 100;
-  const maxPct = ((maxScore - RANGE_MIN) / span) * 100;
+  const span = rangeMax - rangeMin || 1;
+  const minPct = ((minScore - rangeMin) / span) * 100;
+  const maxPct = ((maxScore - rangeMin) / span) * 100;
 
   function handleDraw() {
     if (!canDraw) return;
@@ -186,7 +210,7 @@ export default function LuckyDraw() {
                   <div style={{
                     width: "100%", height: "100%", borderRadius: "50%",
                     background: `radial-gradient(circle at 34% 28%, ${def.shine}, ${def.color} 52%, ${def.shadow})`,
-                    boxShadow: `0 ${ballPx * 0.1}px ${ballPx * 0.22}px rgba(0,0,0,0.28), inset 0 -${ballPx * 0.06}px ${ballPx * 0.1}px rgba(0,0,0,0.1)`,
+                    boxShadow: `0 ${ballPx * 0.1}px ${ballPx * 0.22}px rgba(0,0,0,0.18), inset 0 -${ballPx * 0.06}px ${ballPx * 0.1}px rgba(0,0,0,0.08)`,
                     animation: isSpinning
                       ? `ld2-spin ${0.42 + (i % 5) * 0.08}s linear infinite`
                       : `ld2-float ${floatDur}s ease-in-out ${floatDelay}s infinite`,
@@ -251,8 +275,8 @@ export default function LuckyDraw() {
                 {isDone && drawnNumber !== null && (
                   <div style={{
                     width: 26, height: 26, borderRadius: "50%",
-                    background: `radial-gradient(circle at 34% 28%, ${BALL_DEFS[0].shine}, ${BALL_DEFS[0].color} 52%, ${BALL_DEFS[0].shadow})`,
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.3)",
+                    background: "radial-gradient(circle at 34% 28%, #93C5FD, #3B82F6 52%, #1D4ED8)",
+                    boxShadow: "0 3px 8px rgba(59,130,246,0.5)",
                     animation: "ld2-drop 0.45s cubic-bezier(0.22,1,0.36,1) forwards",
                   }} />
                 )}
@@ -320,17 +344,17 @@ export default function LuckyDraw() {
             {/* Invisible min input — drag interaction only */}
             <input
               type="range" className="ld2-range"
-              min={RANGE_MIN} max={RANGE_MAX} value={minScore}
+              min={rangeMin} max={rangeMax} value={minScore}
               onChange={(e) => {
                 const v = Number(e.target.value);
                 if (v < maxScore) { setMinScore(v); reset(); }
               }}
-              style={{ zIndex: minScore > RANGE_MAX - 10 ? 5 : 4 }}
+              style={{ zIndex: minScore > rangeMax - 10 ? 5 : 4 }}
             />
             {/* Invisible max input — drag interaction only */}
             <input
               type="range" className="ld2-range"
-              min={RANGE_MIN} max={RANGE_MAX} value={maxScore}
+              min={rangeMin} max={rangeMax} value={maxScore}
               onChange={(e) => {
                 const v = Number(e.target.value);
                 if (v > minScore) { setMaxScore(v); reset(); }
@@ -341,39 +365,56 @@ export default function LuckyDraw() {
 
           {/* Min/max labels */}
           <div className="flex justify-between">
-            <span className="text-xs text-muted-foreground">{RANGE_MIN}</span>
-            <span className="text-xs text-muted-foreground">{RANGE_MAX}</span>
+            <span className="text-xs text-muted-foreground">{rangeMin}</span>
+            <span className="text-xs text-muted-foreground">{rangeMax}</span>
           </div>
         </div>
       )}
 
-      {/* RESULT */}
+      {/* RESULT MODAL */}
       {isDone && drawnNumber !== null && (
         <div style={{
-          marginTop: 16, width: "100%", maxWidth: 340,
-          animation: showResult ? "ld2-result 0.32s cubic-bezier(0.22,1,0.36,1) forwards" : "none",
+          position: "fixed", inset: 0, zIndex: 50,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          animation: showResult ? "ld2-result 0.28s cubic-bezier(0.22,1,0.36,1) forwards" : "none",
           opacity: showResult ? 1 : 0,
         }}>
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm text-center">
-            <p className="text-xs font-bold text-blue-500 mb-3 tracking-wide">🎉 추첨 번호</p>
+          <div style={{
+            background: "#fff", borderRadius: 24,
+            padding: "32px 36px 28px",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
+            textAlign: "center", minWidth: 260,
+            animation: showResult ? "ld2-drop 0.38s cubic-bezier(0.22,1,0.36,1) forwards" : "none",
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#3B82F6", marginBottom: 20, letterSpacing: "0.04em" }}>🎉 추첨 번호</p>
             <div style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 100, height: 100, borderRadius: "50%",
-              background: `radial-gradient(circle at 34% 28%, ${BALL_DEFS[0].shine}, ${BALL_DEFS[0].color} 52%, ${BALL_DEFS[0].shadow})`,
-              boxShadow: "0 6px 24px rgba(0,0,0,0.18)",
+              width: 110, height: 110, borderRadius: "50%",
+              background: "radial-gradient(circle at 34% 28%, #93C5FD, #3B82F6 52%, #1D4ED8)",
+              boxShadow: "0 8px 32px rgba(59,130,246,0.5)",
               animation: "ld2-item 0.3s ease-out both",
             }}>
               <span style={{
-                fontSize: 36, fontWeight: 900, color: "#fff",
-                textShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                fontSize: 40, fontWeight: 900, color: "#fff",
+                textShadow: "0 2px 8px rgba(0,0,80,0.3)",
               }}>{drawnNumber}</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">범위: {minScore} ~ {maxScore}</p>
+            <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 12 }}>범위: {minScore} ~ {maxScore}</p>
             <button
               onClick={reset}
-              className="mt-3 w-full py-2 rounded-xl border border-border text-gray-500 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-muted transition-colors"
+              style={{
+                marginTop: 20, width: "100%", padding: "10px 0",
+                borderRadius: 12, border: "none", cursor: "pointer",
+                background: "linear-gradient(135deg, #3B82F6, #2563EB)",
+                color: "#fff", fontSize: 14, fontWeight: 700,
+                boxShadow: "0 4px 14px rgba(59,130,246,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              }}
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw style={{ width: 14, height: 14 }} />
               다시 추첨
             </button>
           </div>
