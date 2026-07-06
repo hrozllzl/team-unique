@@ -254,12 +254,12 @@ export default function Home() {
                     <button
                       key={menu.path}
                       onClick={() => setLocation(menu.path)}
-                      className="w-28 h-28 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
+                      className="w-[10.5rem] h-[10.5rem] flex flex-col items-center justify-center gap-3 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
                     >
-                      <div className="w-14 h-14 rounded-xl bg-sky-100 flex items-center justify-center">
-                        <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
+                      <div className="w-[5.25rem] h-[5.25rem] rounded-xl bg-sky-100 flex items-center justify-center">
+                        <Icon className="w-[2.625rem] h-[2.625rem] text-blue-500" strokeWidth={1.8} />
                       </div>
-                      <p className="text-sm font-semibold text-center leading-tight text-gray-900">{menu.label}</p>
+                      <p className="text-base font-semibold text-center leading-tight text-gray-900">{menu.label}</p>
                     </button>
                   );
                 })}
