@@ -242,20 +242,80 @@ function distributeGreedy(teams: Team[], members: MemberWithScore[], metric: (t:
   return result;
 }
 
+// Same as distributeGreedy, but each team has a fixed maximum size (`targets`)
+// it must not exceed — used so that reassigning around locked members keeps
+// every team at its original member count.
+function distributeGreedyCapped(
+  teams: Team[],
+  members: MemberWithScore[],
+  metric: (t: Team) => number,
+  targets: number[]
+): Team[] {
+  const result = teams.map((t) => ({ ...t, members: [...t.members] }));
+  const remaining = [...members].sort((a, b) => b.score - a.score);
+  while (remaining.length > 0) {
+    const maxScore = remaining[0].score;
+    const bandEnd = remaining.findIndex((m) => maxScore - m.score > 10);
+    const bandSize = bandEnd === -1 ? remaining.length : bandEnd;
+    const pickIdx = Math.floor(Math.random() * bandSize);
+    const [player] = remaining.splice(pickIdx, 1);
+    const eligible = result
+      .map((t, i) => ({ t, i }))
+      .filter(({ t, i }) => t.members.length < targets[i]);
+    const pool = eligible.length > 0 ? eligible : result.map((t, i) => ({ t, i }));
+    const values = pool.map(({ t }) => metric(t));
+    const minVal = Math.min(...values);
+    const candidates = pool.filter((_, idx) => values[idx] === minVal);
+    candidates[Math.floor(Math.random() * candidates.length)].t.members.push(player);
+  }
+  return result;
+}
+
+// Computes how many members each team should end up with so the overall
+// team sizes stay as even as possible (e.g. 24 members / 6 teams = 4 each),
+// while making sure a team never gets a target smaller than the number of
+// members already locked into it.
+function computeTeamTargets(total: number, numTeams: number, lockedCounts: number[]): number[] {
+  const base = Math.floor(total / numTeams);
+  let extra = total - base * numTeams;
+  const targets = lockedCounts.map((c) => Math.max(base, c));
+  const usedExtra = targets.reduce((s, t) => s + (t - base), 0);
+  extra = Math.max(0, extra - usedExtra);
+  const baseSlots = targets
+    .map((t, i) => ({ i, locked: lockedCounts[i] }))
+    .filter((x) => targets[x.i] === base)
+    .sort((a, b) => b.locked - a.locked || a.i - b.i);
+  for (let k = 0; k < extra && k < baseSlots.length; k++) {
+    targets[baseSlots[k].i] += 1;
+  }
+  let diff = total - targets.reduce((s, t) => s + t, 0);
+  let guard = 0;
+  while (diff !== 0 && guard < targets.length * 4) {
+    const idx = guard % targets.length;
+    if (diff > 0) { targets[idx] += 1; diff -= 1; }
+    else if (targets[idx] > lockedCounts[idx]) { targets[idx] -= 1; diff += 1; }
+    guard++;
+  }
+  return targets;
+}
+
 // Snake-draft (평균 일치) — optimize by avg
 // If `initialTeams` is provided, it already contains the locked members for
 // each team and only the unlocked members (those not in `lockedIds`) get
-// (re)distributed around them.
+// (re)distributed around them, capped by `targets` so team sizes stay fixed.
 function buildTeamsAvg(
   members: MemberWithScore[],
   numTeams: number,
   constraints: TeamConstraint[],
   initialTeams?: Team[],
-  lockedIds: Set<string> = new Set()
+  lockedIds: Set<string> = new Set(),
+  targets?: number[]
 ): Team[] {
   if (initialTeams) {
     const toDistribute = members.filter((m) => !lockedIds.has(m.member.id));
-    const distributed = distributeGreedy(initialTeams, toDistribute, calcTeamAvg);
+    const distributed = targets
+      ? distributeGreedyCapped(initialTeams, toDistribute, calcTeamAvg, targets)
+      : distributeGreedy(initialTeams, toDistribute, calcTeamAvg);
     return applyConstraints(optimizeBalance(distributed, calcTeamAvg, lockedIds, 5), constraints, lockedIds);
   }
   const teams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -277,13 +337,16 @@ function buildTeamsTotal(
   numTeams: number,
   constraints: TeamConstraint[],
   initialTeams?: Team[],
-  lockedIds: Set<string> = new Set()
+  lockedIds: Set<string> = new Set(),
+  targets?: number[]
 ): Team[] {
   const teams: Team[] = initialTeams ?? Array.from({ length: numTeams }, (_, i) => ({
     id: `team-${i + 1}`, name: `팀 ${i + 1}`, members: [],
   }));
   const toDistribute = initialTeams ? members.filter((m) => !lockedIds.has(m.member.id)) : members;
-  const distributed = distributeGreedy(teams, toDistribute, calcTeamTotal);
+  const distributed = initialTeams && targets
+    ? distributeGreedyCapped(teams, toDistribute, calcTeamTotal, targets)
+    : distributeGreedy(teams, toDistribute, calcTeamTotal);
   return applyConstraints(optimizeBalance(distributed, calcTeamTotal, lockedIds, 5), constraints, lockedIds);
 }
 
@@ -805,9 +868,13 @@ export default function TeamBuilder() {
       : undefined;
     if (!canKeepLocks && lockedIds.size > 0) setLockedIds(new Set());
 
+    const targets = initialTeams
+      ? computeTeamTargets(memberScores.length, n, initialTeams.map((t) => t.members.length))
+      : undefined;
+
     const built = balancing === "avg"
-      ? buildTeamsAvg(memberScores, n, validConstraints, initialTeams, effectiveLocked)
-      : buildTeamsTotal(memberScores, n, validConstraints, initialTeams, effectiveLocked);
+      ? buildTeamsAvg(memberScores, n, validConstraints, initialTeams, effectiveLocked, targets)
+      : buildTeamsTotal(memberScores, n, validConstraints, initialTeams, effectiveLocked, targets);
     const sorted = built.map((t) => ({
       ...t,
       members: [
