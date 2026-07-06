@@ -44,9 +44,10 @@ export default function LuckyDraw() {
   const [totalDraws, setTotalDraws] = useState(5);
   const [minScore, setMinScore] = useState(rangeMin);
   const [maxScore, setMaxScore] = useState(rangeMax);
-  const [drawnResults, setDrawnResults] = useState<{ score: number; tier: number }[]>([]);
+  const [drawnResults, setDrawnResults] = useState<{ score: number; tier: number; ballDef: typeof BALL_DEFS[0] }[]>([]);
   const [excludedTiers, setExcludedTiers] = useState<number[]>([]);
   const [drawnNumber, setDrawnNumber] = useState<number | null>(null);
+  const [drawnBallDef, setDrawnBallDef] = useState(BALL_DEFS[0]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [showResult, setShowResult] = useState(false);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -83,6 +84,8 @@ export default function LuckyDraw() {
     setDrawnNumber(null);
     setShowResult(false);
     setPhase("spinning");
+    const randomDef = BALL_DEFS[Math.floor(Math.random() * BALL_DEFS.length)];
+    setDrawnBallDef(randomDef);
     const t = setTimeout(() => {
       const picked = validPool[Math.floor(Math.random() * validPool.length)];
       setDrawnNumber(picked);
@@ -95,7 +98,7 @@ export default function LuckyDraw() {
   function confirmResult() {
     if (drawnNumber === null) return;
     const tier = getTier(drawnNumber);
-    setDrawnResults((prev) => [...prev, { score: drawnNumber, tier }]);
+    setDrawnResults((prev) => [...prev, { score: drawnNumber, tier, ballDef: drawnBallDef }]);
     setExcludedTiers((prev) => [...prev, tier]);
     setShowResult(false);
     setDrawnNumber(null);
@@ -172,54 +175,58 @@ export default function LuckyDraw() {
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center px-4 pt-4 pb-10 bg-background">
 
       {/* ── 오늘의 추첨 횟수 ── */}
-      <div className="w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-sm mb-3 text-center">
+      <div className="w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-sm mb-3 text-center"
+        style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <p className="text-xs font-semibold text-gray-500">오늘의 추첨 횟수</p>
-        {hasStarted && (
-          <p className="text-xs text-blue-500 font-medium mt-0.5">
-            {drawnResults.length}/{totalDraws}회 완료
-            {allDone && " 🎉"}
-          </p>
-        )}
-        {/* 진행 바 */}
-        {hasStarted && (
-          <div style={{ marginTop: 8, height: 5, borderRadius: 3, background: "#e5e7eb", overflow: "hidden" }}>
-            <div style={{
-              height: "100%", borderRadius: 3,
-              background: "linear-gradient(90deg, #3B82F6, #2563EB)",
-              width: `${(drawnResults.length / totalDraws) * 100}%`,
-              transition: "width 0.4s ease",
-            }} />
-          </div>
-        )}
-        {/* 스테퍼 */}
-        <div className="flex items-center justify-center gap-3 mt-3">
-          <button
-            onClick={() => { if (!hasStarted && totalDraws > 1) setTotalDraws(t => t - 1); }}
-            disabled={hasStarted || totalDraws <= 1}
-            style={{
-              width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #e5e7eb",
-              background: hasStarted || totalDraws <= 1 ? "#f9fafb" : "#fff",
-              color: hasStarted || totalDraws <= 1 ? "#d1d5db" : "#374151",
-              cursor: hasStarted || totalDraws <= 1 ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.06)", flexShrink: 0,
-            }}
-          ><Minus style={{ width: 14, height: 14 }} /></button>
-          <span style={{ fontSize: 24, fontWeight: 800, color: "#1d4ed8", minWidth: 32, textAlign: "center" }}>
-            {totalDraws}
-          </span>
-          <button
-            onClick={() => { if (!hasStarted && totalDraws < 20) setTotalDraws(t => t + 1); }}
-            disabled={hasStarted || totalDraws >= 20}
-            style={{
-              width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #e5e7eb",
-              background: hasStarted || totalDraws >= 20 ? "#f9fafb" : "#fff",
-              color: hasStarted || totalDraws >= 20 ? "#d1d5db" : "#374151",
-              cursor: hasStarted || totalDraws >= 20 ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.06)", flexShrink: 0,
-            }}
-          ><Plus style={{ width: 14, height: 14 }} /></button>
+        {/* 고정 높이 영역 — 추첨 전/후 높이 동일 */}
+        <div style={{ height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%" }}>
+          {!hasStarted ? (
+            /* 스테퍼 */
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => { if (totalDraws > 1) setTotalDraws(t => t - 1); }}
+                disabled={totalDraws <= 1}
+                style={{
+                  width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #e5e7eb",
+                  background: totalDraws <= 1 ? "#f9fafb" : "#fff",
+                  color: totalDraws <= 1 ? "#d1d5db" : "#374151",
+                  cursor: totalDraws <= 1 ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)", flexShrink: 0,
+                }}
+              ><Minus style={{ width: 14, height: 14 }} /></button>
+              <span style={{ fontSize: 24, fontWeight: 800, color: "#1d4ed8", minWidth: 32, textAlign: "center" }}>
+                {totalDraws}
+              </span>
+              <button
+                onClick={() => { if (totalDraws < 20) setTotalDraws(t => t + 1); }}
+                disabled={totalDraws >= 20}
+                style={{
+                  width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #e5e7eb",
+                  background: totalDraws >= 20 ? "#f9fafb" : "#fff",
+                  color: totalDraws >= 20 ? "#d1d5db" : "#374151",
+                  cursor: totalDraws >= 20 ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)", flexShrink: 0,
+                }}
+              ><Plus style={{ width: 14, height: 14 }} /></button>
+            </div>
+          ) : (
+            /* 진행 표시 */
+            <div style={{ width: "100%" }}>
+              <p style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8", marginBottom: 8 }}>
+                {drawnResults.length}/{totalDraws}회 완료{allDone && " 🎉"}
+              </p>
+              <div style={{ height: 5, borderRadius: 3, background: "#e5e7eb", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 3,
+                  background: "linear-gradient(90deg, #3B82F6, #2563EB)",
+                  width: `${(drawnResults.length / totalDraws) * 100}%`,
+                  transition: "width 0.4s ease",
+                }} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -278,71 +285,82 @@ export default function LuckyDraw() {
           {/* CHROME RING */}
           <div style={{
             margin: "0 auto", marginTop: -44, width: GD + 10, height: 34,
-            background: "linear-gradient(180deg, #d0d0d0 0%, #b8b8b8 30%, #989898 60%, #c8c8c8 100%)",
+            background: "#262D38",
             borderRadius: 8,
-            boxShadow: "0 6px 16px rgba(0,0,0,0.28), inset 0 2px 5px rgba(255,255,255,0.65), inset 0 -2px 5px rgba(0,0,0,0.18)",
+            boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
             position: "relative", zIndex: 10,
-          }}>
-            <div style={{
-              position: "absolute", top: "26%", left: "6%", right: "6%", height: "20%",
-              background: "rgba(255,255,255,0.6)", borderRadius: 4,
-            }} />
-          </div>
+          }} />
 
           {/* BASE */}
           <div style={{
             margin: "0 auto", marginTop: -2, width: GD - 20,
-            background: "linear-gradient(150deg, #9ca3af 0%, #6b7280 40%, #4b5563 100%)",
-            borderRadius: "0 0 36px 36px",
-            boxShadow: "0 8px 28px rgba(0,0,0,0.22), inset 4px 0 12px rgba(255,255,255,0.18), inset -4px 0 12px rgba(0,0,0,0.12)",
-            paddingBottom: 18, position: "relative", zIndex: 9,
+            background: "#3F4A56",
+            borderRadius: "0 0 40px 40px",
+            boxShadow: "0 10px 32px rgba(0,0,0,0.4)",
+            paddingBottom: 22, position: "relative", zIndex: 9,
           }}>
-            <div style={{ height: 10 }} />
+            <div style={{ height: 26 }} />
+            {/* 레버 버튼 */}
+            <div
+              onClick={(!isSpinning && !isDone) ? (allDone ? resetAll : canDraw ? handleDraw : undefined) : undefined}
+              style={{
+                margin: "0 auto",
+                position: "relative",
+                width: 160, height: 72,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: (canDraw || allDone) && !isSpinning && !isDone ? "pointer" : "not-allowed",
+                opacity: isSpinning ? 0.7 : 1,
+                transition: "all 0.15s",
+                transform: isSpinning ? "translateY(3px)" : "translateY(0)",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{
+                position: "absolute",
+                width: 80, height: 80,
+                borderRadius: "50%",
+                background: allDone ? "#DC2626" : canDraw ? "#F7CA45" : "#9CA3AF",
+                boxShadow: allDone
+                  ? "0 5px 0 #991B1B, 0 8px 20px rgba(0,0,0,0.3)"
+                  : canDraw
+                    ? "0 5px 0 #C49A1A, 0 8px 20px rgba(0,0,0,0.3)"
+                    : "0 4px 0 #4B5563, 0 6px 14px rgba(0,0,0,0.2)",
+                top: "50%", left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 0,
+              }} />
+              <div style={{
+                position: "relative", zIndex: 1,
+                padding: "9px 32px", borderRadius: 50,
+                background: allDone ? "#EF4444" : canDraw ? "#FBEC4D" : "#D1D5DB",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.25), inset 0 1px 3px rgba(255,255,255,0.6)",
+                color: allDone ? "#fff" : canDraw ? "#78350F" : "#6B7280",
+                fontSize: 15, fontWeight: 800,
+                letterSpacing: "0.02em", userSelect: "none",
+                whiteSpace: "nowrap",
+              }}>
+                {isSpinning ? "추첨 중..." : allDone ? "초기화하기" : "추첨하기"}
+              </div>
+            </div>
             {/* 슬롯 출구 */}
-            <div style={{ margin: "0 auto", width: 64, height: 36, position: "relative" }}>
+            <div style={{ margin: "26px auto 0", width: 64, height: 32, position: "relative" }}>
               <div style={{
                 position: "absolute", inset: 0,
-                background: "linear-gradient(160deg, #6b7280, #4b5563)",
-                borderRadius: "20px 20px 8px 8px",
-                boxShadow: "inset 0 3px 8px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(255,255,255,0.15)",
-                border: "1.5px solid rgba(255,255,255,0.25)",
+                background: "#0F1319",
+                borderRadius: "16px 16px 8px 8px",
+                boxShadow: "inset 0 4px 10px rgba(0,0,0,0.6)",
                 overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {isDone && drawnNumber !== null && (
                   <div style={{
                     width: 24, height: 24, borderRadius: "50%",
-                    background: "radial-gradient(circle at 34% 28%, #93C5FD, #3B82F6 52%, #1D4ED8)",
-                    boxShadow: "0 3px 8px rgba(59,130,246,0.5)",
+                    background: `radial-gradient(circle at 34% 28%, ${drawnBallDef.shine}, ${drawnBallDef.color} 52%, ${drawnBallDef.shadow})`,
+                    boxShadow: `0 3px 8px rgba(0,0,0,0.3)`,
                     animation: "ld2-drop 0.45s cubic-bezier(0.22,1,0.36,1) forwards",
                   }} />
                 )}
               </div>
             </div>
-            {/* 텍스트 버튼 */}
-            <button
-              onClick={allDone ? resetAll : canDraw ? handleDraw : undefined}
-              disabled={isSpinning || isDone || (!canDraw && !allDone)}
-              style={{
-                display: "block", margin: "12px auto 0",
-                padding: "9px 28px", borderRadius: 24,
-                background: allDone
-                  ? "linear-gradient(135deg, #3B82F6, #2563EB)"
-                  : canDraw
-                    ? "linear-gradient(135deg, #3B82F6, #2563EB)"
-                    : "linear-gradient(135deg, #cbd5e1, #94a3b8)",
-                color: "#fff", fontSize: 13, fontWeight: 700,
-                border: "none",
-                cursor: (canDraw || allDone) && !isSpinning && !isDone ? "pointer" : "not-allowed",
-                opacity: isSpinning ? 0.6 : 1,
-                boxShadow: (canDraw || allDone) && !isSpinning
-                  ? "0 4px 14px rgba(0,0,0,0.18)"
-                  : "none",
-                transition: "all 0.2s",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {isSpinning ? "추첨 중..." : allDone ? "초기화하기" : "추첨하기"}
-            </button>
           </div>
         </div>
       </div>
@@ -360,25 +378,28 @@ export default function LuckyDraw() {
         )}
       </div>
 
-      {/* ── 완료된 추첨 결과 카드 ── */}
+      {/* ── 완료된 추첨 결과 볼 ── */}
       {drawnResults.length > 0 && (
-        <div className="w-full max-w-sm mt-2 mb-1" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-          {drawnResults.map((r, i) => (
-            <div key={i} className="bg-card border border-border" style={{
+        <div className="w-full max-w-sm mt-3 mb-1" style={{
+          display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "flex-start",
+        }}>
+          {drawnResults.map((r, i) => {
+            const bd = r.ballDef ?? BALL_DEFS[i % BALL_DEFS.length];
+            return (<div key={i} style={{
+              width: 56, height: 56, borderRadius: "50%",
+              background: `radial-gradient(circle at 34% 28%, ${bd.shine}, ${bd.color} 52%, ${bd.shadow})`,
+              boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              padding: "10px 8px", borderRadius: 16,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              flexShrink: 0,
             }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF" }}>{i + 1}차</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: "#1D4ED8", lineHeight: 1.2 }}>{r.score}</span>
-              <span style={{ fontSize: 10, color: "#93C5FD", marginTop: 1 }}>{r.tier}점대</span>
-            </div>
-          ))}
+              <span style={{ fontSize: 14, fontWeight: 900, color: "#000", lineHeight: 1 }}>{r.score}</span>
+            </div>);
+          })}
         </div>
       )}
 
       {/* RANGE SLIDER */}
-      <div className="mt-3 w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-sm">
+      {!hasStarted && <div className="mt-3 w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-semibold text-gray-500">추첨 범위</span>
           <span className="text-sm font-bold text-blue-600">{minScore} ~ {maxScore}</span>
@@ -425,10 +446,7 @@ export default function LuckyDraw() {
           <span className="text-xs text-muted-foreground">{rangeMin}</span>
           <span className="text-xs text-muted-foreground">{rangeMax}</span>
         </div>
-        {hasStarted && (
-          <p className="text-xs text-gray-400 mt-1 text-center">추첨 시작 후 범위 변경 불가</p>
-        )}
-      </div>
+      </div>}
 
 
       {/* ── 결과 팝업 모달 ── */}
@@ -458,11 +476,11 @@ export default function LuckyDraw() {
             <div style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               width: 110, height: 110, borderRadius: "50%",
-              background: "radial-gradient(circle at 34% 28%, #93C5FD, #3B82F6 52%, #1D4ED8)",
-              boxShadow: "0 8px 32px rgba(59,130,246,0.5)",
+              background: `radial-gradient(circle at 34% 28%, ${drawnBallDef.shine}, ${drawnBallDef.color} 52%, ${drawnBallDef.shadow})`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.25)`,
               animation: "ld2-item 0.3s ease-out both",
             }}>
-              <span style={{ fontSize: 40, fontWeight: 900, color: "#fff", textShadow: "0 2px 8px rgba(0,0,80,0.3)" }}>
+              <span style={{ fontSize: 40, fontWeight: 900, color: "#000", textShadow: "none" }}>
                 {drawnNumber}
               </span>
             </div>
