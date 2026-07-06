@@ -877,10 +877,7 @@ export default function TeamBuilder() {
       : buildTeamsTotal(memberScores, n, validConstraints, initialTeams, effectiveLocked, targets);
     const sorted = built.map((t) => ({
       ...t,
-      members: [
-        ...t.members.filter((m) => effectiveLocked.has(m.member.id)),
-        ...sortByScore(t.members.filter((m) => !effectiveLocked.has(m.member.id))),
-      ],
+      members: sortByScore(t.members),
     }));
     setTeams(sorted);
     setBuildCount((c) => c + 1);
