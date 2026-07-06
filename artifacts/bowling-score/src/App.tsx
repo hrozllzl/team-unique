@@ -19,6 +19,7 @@ import NotFound from "@/pages/not-found";
 import MigrationModal from "@/components/MigrationModal";
 import TeamBuilder from "@/pages/TeamBuilder";
 import ScoreComparison from "@/pages/ScoreComparison";
+import LuckyDraw from "@/pages/LuckyDraw";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ function AppRoutes({ onLogout, role, userName, accountId }: { onLogout: () => vo
           <Route path="/members">{isAdmin ? <Members /> : <Redirect to="/" />}</Route>
           <Route path="/score-entry">{isAdmin ? <ScoreEntry /> : <Redirect to="/" />}</Route>
           <Route path="/team-builder">{isAdmin ? <TeamBuilder /> : <Redirect to="/" />}</Route>
+          <Route path="/lucky-draw">{isAdmin ? <LuckyDraw /> : <Redirect to="/" />}</Route>
           <Route path="/score-comparison">{isAdmin ? <ScoreComparison /> : <Redirect to="/" />}</Route>
           <Route path="/member-list" component={MemberList} />
           <Route path="/mypage">{!isAdmin ? <MyPage /> : <Redirect to="/" />}</Route>

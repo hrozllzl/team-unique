@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 
-import { Users, ClipboardEdit, BarChart2, Calendar, Shuffle, TrendingUp } from "lucide-react";
+import { Users, ClipboardEdit, BarChart2, Calendar, Shuffle, TrendingUp, Sparkles } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -28,6 +28,7 @@ const adminMenuGroups = [
     title: "부가 기능",
     items: [
       { path: "/team-builder", icon: Shuffle, label: "팀 짜기" },
+      { path: "/lucky-draw", icon: Sparkles, label: "행운 번호 추첨" },
     ],
   },
 ];
