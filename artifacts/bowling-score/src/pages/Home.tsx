@@ -8,42 +8,27 @@ import { useAuth } from "@/context/AuthContext";
 import { useApp } from "@/context/AppContext";
 import { scoreColor, calcAvg } from "@/lib/scoreUtils";
 
-const adminMenus = [
+const adminMenuGroups = [
   {
-    path: "/members",
-    icon: Users,
-    label: "회원 관리",
-    desc: "회원 추가 및 가입 승인",
+    title: "관리자 메뉴",
+    items: [
+      { path: "/members", icon: Users, label: "회원 관리" },
+      { path: "/score-entry", icon: ClipboardEdit, label: "점수 입력" },
+    ],
   },
   {
-    path: "/score-entry",
-    icon: ClipboardEdit,
-    label: "점수 입력",
-    desc: "날짜별 회원 점수 기록",
+    title: "점수 관리",
+    items: [
+      { path: "/stats", icon: BarChart2, label: "전체 통계 점수" },
+      { path: "/games", icon: Calendar, label: "게임별 점수" },
+      { path: "/score-comparison", icon: TrendingUp, label: "점수 비교" },
+    ],
   },
   {
-    path: "/stats",
-    icon: BarChart2,
-    label: "전체 통계 점수",
-    desc: "회원별 평균 점수 및 순위",
-  },
-  {
-    path: "/games",
-    icon: Calendar,
-    label: "게임별 점수",
-    desc: "날짜별 점수 기록 목록",
-  },
-  {
-    path: "/team-builder",
-    icon: Shuffle,
-    label: "팀 짜기",
-    desc: "균형 잡힌 팀 구성",
-  },
-  {
-    path: "/score-comparison",
-    icon: TrendingUp,
-    label: "점수 비교",
-    desc: "기간별 회원 평균 비교",
+    title: "부가 기능",
+    items: [
+      { path: "/team-builder", icon: Shuffle, label: "팀 짜기" },
+    ],
   },
 ];
 
@@ -213,7 +198,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { role, userName } = useAuth();
   const { userAccounts } = useApp();
-  const menus = role === "admin" ? adminMenus : memberMenus;
+  const menus = memberMenus;
   const isMember = role === "member";
   const pendingCount = userAccounts.filter((u) => u.status === "pending").length;
 
@@ -258,25 +243,29 @@ export default function Home() {
           <MemberPersonalStats userName={userName} />
         </>
       ) : (
-        <div className="grid grid-cols-2 gap-6 w-full max-w-2xl">
-          {menus.map((menu) => {
-            const Icon = menu.icon;
-            return (
-              <button
-                key={menu.path}
-                onClick={() => setLocation(menu.path)}
-                className="flex flex-col items-center justify-center gap-3 p-8 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center">
-                  <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-base text-gray-900">{menu.label}</p>
-                  {"desc" in menu && <p className="text-xs text-muted-foreground mt-0.5">{(menu as { desc: string }).desc}</p>}
-                </div>
-              </button>
-            );
-          })}
+        <div className="w-full max-w-2xl flex flex-col gap-8">
+          {adminMenuGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="text-base font-bold text-gray-900 mb-3">{group.title}</h3>
+              <div className={`grid gap-4 ${group.items.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+                {group.items.map((menu) => {
+                  const Icon = menu.icon;
+                  return (
+                    <button
+                      key={menu.path}
+                      onClick={() => setLocation(menu.path)}
+                      className="flex flex-col items-center justify-center gap-2 aspect-square rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-blue-500" strokeWidth={1.8} />
+                      </div>
+                      <p className="text-xs font-semibold text-center leading-tight text-gray-900">{menu.label}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
