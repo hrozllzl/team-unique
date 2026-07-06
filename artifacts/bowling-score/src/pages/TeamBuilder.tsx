@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   X, GripVertical, Users, Settings, Shuffle, UserPlus,
   Plus, Link, Unlink, Save, FolderOpen, Trash2, Upload, Pencil, Check,
+  Lock, LockOpen,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -118,6 +119,7 @@ function sortByTier(members: MemberWithScore[], numTeams: number): MemberWithSco
 function optimizeBalance(
   teams: Team[],
   metric: (t: Team) => number,
+  lockedIds: Set<string> = new Set(),
   maxDiff = 5,
   maxIter = 3000
 ): Team[] {
@@ -134,7 +136,9 @@ function optimizeBalance(
     let bestSwap: { i: number; j: number } | null = null;
     let bestDiff = maxVal - minVal;
     for (let i = 0; i < maxMembers.length; i++) {
+      if (lockedIds.has(maxMembers[i].member.id)) continue;
       for (let j = 0; j < minMembers.length; j++) {
+        if (lockedIds.has(minMembers[j].member.id)) continue;
         const tmp = maxMembers[i];
         maxMembers[i] = minMembers[j];
         minMembers[j] = tmp;
@@ -158,11 +162,14 @@ function optimizeBalance(
 }
 
 // Apply together/apart constraints via best-available swaps.
-function applyConstraints(teams: Team[], constraints: TeamConstraint[]): Team[] {
+// Constraints involving a locked member are skipped since satisfying them
+// could require moving a member the user has pinned in place.
+function applyConstraints(teams: Team[], constraints: TeamConstraint[], lockedIds: Set<string> = new Set()): Team[] {
   const result = teams.map((t) => ({ ...t, members: [...t.members] }));
 
   for (const c of constraints) {
     const { type, memberA, memberB } = c;
+    if (lockedIds.has(memberA) || lockedIds.has(memberB)) continue;
     const idxA = result.findIndex((t) => t.members.some((m) => m.member.id === memberA));
     const idxB = result.findIndex((t) => t.members.some((m) => m.member.id === memberB));
     if (idxA === -1 || idxB === -1) continue;
@@ -174,6 +181,7 @@ function applyConstraints(teams: Team[], constraints: TeamConstraint[]): Team[] 
       let bestI = -1, bestImbalance = Infinity;
       for (let i = 0; i < teamA.members.length; i++) {
         if (teamA.members[i].member.id === memberA) continue;
+        if (lockedIds.has(teamA.members[i].member.id)) continue;
         const swap = teamA.members[i];
         const newAvgA = (calcTeamTotal(teamA) - swap.score + mBObj.score) / teamA.members.length;
         const newAvgB = (calcTeamTotal(teamB) - mBObj.score + swap.score) / teamB.members.length;
@@ -194,6 +202,7 @@ function applyConstraints(teams: Team[], constraints: TeamConstraint[]): Team[] 
         if (t === idxA) continue;
         const tgt = result[t];
         for (let i = 0; i < tgt.members.length; i++) {
+          if (lockedIds.has(tgt.members[i].member.id)) continue;
           const swap = tgt.members[i];
           const newSameAvg = (calcTeamTotal(sameTeam) - mBObj.score + swap.score) / sameTeam.members.length;
           const newTgtAvg = (calcTeamTotal(tgt) - swap.score + mBObj.score) / tgt.members.length;
@@ -213,8 +222,42 @@ function applyConstraints(teams: Team[], constraints: TeamConstraint[]): Team[] 
   return result;
 }
 
+// Distributes members one-by-one into whichever team currently has the
+// lowest metric value (used to fill in unlocked members around a preset
+// of already-locked members).
+function distributeGreedy(teams: Team[], members: MemberWithScore[], metric: (t: Team) => number): Team[] {
+  const result = teams.map((t) => ({ ...t, members: [...t.members] }));
+  const remaining = [...members].sort((a, b) => b.score - a.score);
+  while (remaining.length > 0) {
+    const maxScore = remaining[0].score;
+    const bandEnd = remaining.findIndex((m) => maxScore - m.score > 10);
+    const bandSize = bandEnd === -1 ? remaining.length : bandEnd;
+    const pickIdx = Math.floor(Math.random() * bandSize);
+    const [player] = remaining.splice(pickIdx, 1);
+    const values = result.map(metric);
+    const minVal = Math.min(...values);
+    const candidates = result.filter((_, i) => values[i] === minVal);
+    candidates[Math.floor(Math.random() * candidates.length)].members.push(player);
+  }
+  return result;
+}
+
 // Snake-draft (평균 일치) — optimize by avg
-function buildTeamsAvg(members: MemberWithScore[], numTeams: number, constraints: TeamConstraint[]): Team[] {
+// If `initialTeams` is provided, it already contains the locked members for
+// each team and only the unlocked members (those not in `lockedIds`) get
+// (re)distributed around them.
+function buildTeamsAvg(
+  members: MemberWithScore[],
+  numTeams: number,
+  constraints: TeamConstraint[],
+  initialTeams?: Team[],
+  lockedIds: Set<string> = new Set()
+): Team[] {
+  if (initialTeams) {
+    const toDistribute = members.filter((m) => !lockedIds.has(m.member.id));
+    const distributed = distributeGreedy(initialTeams, toDistribute, calcTeamAvg);
+    return applyConstraints(optimizeBalance(distributed, calcTeamAvg, lockedIds, 5), constraints, lockedIds);
+  }
   const teams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
     id: `team-${i + 1}`, name: `팀 ${i + 1}`, members: [],
   }));
@@ -225,27 +268,23 @@ function buildTeamsAvg(members: MemberWithScore[], numTeams: number, constraints
     const teamIdx = round % 2 === 0 ? pos : numTeams - 1 - pos;
     teams[teamIdx].members.push(m);
   });
-  return applyConstraints(optimizeBalance(teams, calcTeamAvg, 5), constraints);
+  return applyConstraints(optimizeBalance(teams, calcTeamAvg, lockedIds, 5), constraints, lockedIds);
 }
 
 // Greedy (총점 일치) — optimize by total
-function buildTeamsTotal(members: MemberWithScore[], numTeams: number, constraints: TeamConstraint[]): Team[] {
-  const teams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+function buildTeamsTotal(
+  members: MemberWithScore[],
+  numTeams: number,
+  constraints: TeamConstraint[],
+  initialTeams?: Team[],
+  lockedIds: Set<string> = new Set()
+): Team[] {
+  const teams: Team[] = initialTeams ?? Array.from({ length: numTeams }, (_, i) => ({
     id: `team-${i + 1}`, name: `팀 ${i + 1}`, members: [],
   }));
-  const remaining = [...members].sort((a, b) => b.score - a.score);
-  while (remaining.length > 0) {
-    const maxScore = remaining[0].score;
-    const bandEnd = remaining.findIndex((m) => maxScore - m.score > 10);
-    const bandSize = bandEnd === -1 ? remaining.length : bandEnd;
-    const pickIdx = Math.floor(Math.random() * bandSize);
-    const [player] = remaining.splice(pickIdx, 1);
-    const totals = teams.map(calcTeamTotal);
-    const minTotal = Math.min(...totals);
-    const candidates = teams.filter((_, i) => totals[i] === minTotal);
-    candidates[Math.floor(Math.random() * candidates.length)].members.push(player);
-  }
-  return applyConstraints(optimizeBalance(teams, calcTeamTotal, 5), constraints);
+  const toDistribute = initialTeams ? members.filter((m) => !lockedIds.has(m.member.id)) : members;
+  const distributed = distributeGreedy(teams, toDistribute, calcTeamTotal);
+  return applyConstraints(optimizeBalance(distributed, calcTeamTotal, lockedIds, 5), constraints, lockedIds);
 }
 
 // ── SortableMemberCard ─────────────────────────────────────────────────────
@@ -254,25 +293,34 @@ function SortableMemberCard({
   teamId,
   overlay = false,
   onDelete,
+  isLocked = false,
+  onToggleLock,
 }: {
   mws: MemberWithScore;
   teamId: string;
   overlay?: boolean;
   onDelete?: () => void;
+  isLocked?: boolean;
+  onToggleLock?: () => void;
 }) {
   const id = `${teamId}::${mws.member.id}`;
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: isLocked });
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg bg-background border border-card-border text-sm select-none
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg bg-background border text-sm select-none
+        ${isLocked ? "border-amber-300/70 bg-amber-50/40" : "border-card-border"}
         ${isDragging && !overlay ? "opacity-40" : ""}
         ${overlay ? "shadow-lg ring-2 ring-primary/40" : "hover:bg-muted/30"}
       `}
     >
-      <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground">
+      <span
+        {...attributes}
+        {...listeners}
+        className={`text-muted-foreground/40 ${isLocked ? "opacity-20 cursor-not-allowed" : "cursor-grab active:cursor-grabbing hover:text-muted-foreground"}`}
+      >
         <GripVertical className="w-4 h-4" />
       </span>
       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
@@ -282,7 +330,18 @@ function SortableMemberCard({
       <span className={`font-medium ${Math.round(mws.score) >= 200 ? "text-red-500" : "text-muted-foreground"}`}>
         {Math.round(mws.score)}점
       </span>
-      {!overlay && onDelete && (
+      {!overlay && onToggleLock && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleLock(); }}
+          className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+            isLocked ? "bg-amber-200 text-amber-700 hover:bg-amber-300" : "bg-muted text-muted-foreground/60 hover:bg-amber-100 hover:text-amber-600"
+          }`}
+          title={isLocked ? "잠금 해제" : "잠금 (재배정에서 제외)"}
+        >
+          {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
+        </button>
+      )}
+      {!overlay && onDelete && !isLocked && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="w-5 h-5 rounded-full flex items-center justify-center bg-rose-100 text-rose-400 hover:bg-rose-200 transition-colors shrink-0"
@@ -305,6 +364,8 @@ function TeamColumn({
   onAddMember,
   addingMode,
   onSetAddingMode,
+  lockedIds,
+  onToggleLock,
 }: {
   team: Team;
   isOver: boolean;
@@ -314,10 +375,13 @@ function TeamColumn({
   onAddMember: (mws: MemberWithScore) => void;
   addingMode: boolean;
   onSetAddingMode: (v: boolean) => void;
+  lockedIds: Set<string>;
+  onToggleLock: (memberId: string) => void;
 }) {
   const { setNodeRef } = useDroppable({ id: team.id });
   const itemIds = team.members.map((m) => `${team.id}::${m.member.id}`);
   const needsMore = perTeamTarget > 0 && team.members.length < perTeamTarget;
+  const lockedCount = team.members.filter((m) => lockedIds.has(m.member.id)).length;
 
   return (
     <div
@@ -326,7 +390,14 @@ function TeamColumn({
         ${isOver ? "border-primary/50 bg-primary/5" : "border-card-border bg-card"}`}
     >
       <div className="flex items-center justify-between pb-1 border-b border-card-border mb-1">
-        <span className="font-bold text-sm">{team.name}</span>
+        <span className="font-bold text-sm flex items-center gap-1.5">
+          {team.name}
+          {lockedCount > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
+              <Lock className="w-2.5 h-2.5" />{lockedCount}
+            </span>
+          )}
+        </span>
         <div className="flex gap-2 text-xs">
           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">평균 {calcTeamAvg(team)}점</span>
           <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">총 {calcTeamTotal(team)}점</span>
@@ -339,6 +410,8 @@ function TeamColumn({
             mws={mws}
             teamId={team.id}
             onDelete={() => onDeleteMember(mws.member.id)}
+            isLocked={lockedIds.has(mws.member.id)}
+            onToggleLock={() => onToggleLock(mws.member.id)}
           />
         ))}
       </SortableContext>
@@ -611,6 +684,7 @@ export default function TeamBuilder() {
   const [perTeamTarget, setPerTeamTarget] = useState(0);
   const [deletedFromTeam, setDeletedFromTeam] = useState<MemberWithScore[]>([]);
   const [addingToTeamId, setAddingToTeamId] = useState<string | null>(null);
+  const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
 
   // Guests
   const [guests, setGuests] = useState<GuestMember[]>([]);
@@ -627,6 +701,12 @@ export default function TeamBuilder() {
   useEffect(() => {
     persistSavedResults(savedResults);
   }, [savedResults]);
+
+  // Changing the number of teams invalidates which team each locked member
+  // belongs to, so clear locks in that case.
+  useEffect(() => {
+    setLockedIds(new Set());
+  }, [numTeams]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -660,6 +740,17 @@ export default function TeamBuilder() {
     [memberScores]
   );
 
+  // Locks only make sense for the current set of participants; drop any
+  // that reference a member who was excluded/removed.
+  useEffect(() => {
+    setLockedIds((prev) => {
+      if (prev.size === 0) return prev;
+      const validIds = new Set(memberScores.map((m) => m.member.id));
+      const next = new Set([...prev].filter((id) => validIds.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [memberScores]);
+
   function addGuest() {
     const name = guestName.trim();
     const score = parseInt(guestScore, 10);
@@ -690,6 +781,15 @@ export default function TeamBuilder() {
     setConstraints((prev) => prev.filter((c) => c.id !== id));
   }
 
+  function toggleLock(memberId: string) {
+    setLockedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) next.delete(memberId);
+      else next.add(memberId);
+      return next;
+    });
+  }
+
   function buildTeams() {
     if (memberScores.length === 0) return;
     const n = Math.min(numTeams, memberScores.length);
@@ -698,10 +798,31 @@ export default function TeamBuilder() {
         memberScores.some((m) => m.member.id === c.memberA) &&
         memberScores.some((m) => m.member.id === c.memberB)
     );
+
+    // Keep locked members pinned to their current team and only reshuffle
+    // the rest, as long as the team count hasn't changed.
+    const canKeepLocks = hasBuilt && teams.length === n && lockedIds.size > 0;
+    const effectiveLocked = canKeepLocks ? lockedIds : new Set<string>();
+    const initialTeams = canKeepLocks
+      ? teams.map((t) => ({
+          ...t,
+          members: t.members.filter(
+            (m) => lockedIds.has(m.member.id) && memberScores.some((ms) => ms.member.id === m.member.id)
+          ),
+        }))
+      : undefined;
+    if (!canKeepLocks && lockedIds.size > 0) setLockedIds(new Set());
+
     const built = balancing === "avg"
-      ? buildTeamsAvg(memberScores, n, validConstraints)
-      : buildTeamsTotal(memberScores, n, validConstraints);
-    const sorted = built.map((t) => ({ ...t, members: sortByScore(t.members) }));
+      ? buildTeamsAvg(memberScores, n, validConstraints, initialTeams, effectiveLocked)
+      : buildTeamsTotal(memberScores, n, validConstraints, initialTeams, effectiveLocked);
+    const sorted = built.map((t) => ({
+      ...t,
+      members: [
+        ...t.members.filter((m) => effectiveLocked.has(m.member.id)),
+        ...sortByScore(t.members.filter((m) => !effectiveLocked.has(m.member.id))),
+      ],
+    }));
     setTeams(sorted);
     setBuildCount((c) => c + 1);
     setHasBuilt(true);
@@ -762,10 +883,17 @@ export default function TeamBuilder() {
     setTeams((prev) => {
       const team = prev.find((t) => t.id === teamId);
       const mws = team?.members.find((m) => m.member.id === memberId);
-      if (mws) setDeletedFromTeam((d) => [...d, mws]);
+      if (!mws) return prev;
+      setDeletedFromTeam((d) => [...d, mws]);
       return prev.map((t) =>
         t.id === teamId ? { ...t, members: t.members.filter((m) => m.member.id !== memberId) } : t
       );
+    });
+    setLockedIds((prev) => {
+      if (!prev.has(memberId)) return prev;
+      const next = new Set(prev);
+      next.delete(memberId);
+      return next;
     });
   }, []);
 
@@ -1116,9 +1244,27 @@ export default function TeamBuilder() {
                     disabled={memberScores.length < numTeams}
                     className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Shuffle className="w-4 h-4" />
-                    팀 짜기
+                    {hasBuilt && teams.length === Math.min(numTeams, memberScores.length) && lockedIds.size > 0 ? (
+                      <>
+                        <Lock className="w-4 h-4" />
+                        잠금 유지하고 다시 배정 ({lockedIds.size}명 잠김)
+                      </>
+                    ) : (
+                      <>
+                        <Shuffle className="w-4 h-4" />
+                        팀 짜기
+                      </>
+                    )}
                   </button>
+                  {hasBuilt && teams.length === Math.min(numTeams, memberScores.length) && lockedIds.size > 0 && (
+                    <button
+                      onClick={() => setLockedIds(new Set())}
+                      className="w-full mt-1.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-1"
+                    >
+                      <LockOpen className="w-3 h-3" />
+                      잠금 전체 해제
+                    </button>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -1159,6 +1305,8 @@ export default function TeamBuilder() {
                         onAddMember={(mws) => handleAddToTeam(team.id, mws)}
                         addingMode={addingToTeamId === team.id}
                         onSetAddingMode={(v) => setAddingToTeamId(v ? team.id : null)}
+                        lockedIds={lockedIds}
+                        onToggleLock={toggleLock}
                       />
                     ))}
                   </div>
