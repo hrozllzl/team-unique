@@ -278,7 +278,7 @@ function SortableMemberCard({
       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
         {mws.member.name[0]}
       </div>
-      <span className="flex-1 font-medium">{mws.member.name}{mws.isGuest && <span className="ml-1 text-xs text-amber-500">G</span>}</span>
+      <span className="flex-1 min-w-0 font-medium truncate">{mws.member.name}{mws.isGuest && <span className="ml-1 text-xs text-amber-500">G</span>}</span>
       <span className={`font-medium ${Math.round(mws.score) >= 200 ? "text-red-500" : "text-muted-foreground"}`}>
         {Math.round(mws.score)}점
       </span>
@@ -360,8 +360,8 @@ function TeamColumn({
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${mws.isGuest ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
                     {mws.member.name[0]}
                   </div>
-                  <span className="flex-1 font-medium">{mws.member.name}</span>
-                  <span className="text-xs text-muted-foreground">{Math.round(mws.score)}점</span>
+                  <span className="flex-1 min-w-0 font-medium truncate">{mws.member.name}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{Math.round(mws.score)}점</span>
                 </button>
               ))}
               <button
@@ -1142,10 +1142,10 @@ export default function TeamBuilder() {
                   onDragEnd={handleDragEnd}
                 >
                   <div
-                    className={`grid gap-4 ${
-                      teams.length <= 2 ? "grid-cols-1 sm:grid-cols-2"
-                        : teams.length <= 4 ? "grid-cols-2"
-                        : "grid-cols-2 xl:grid-cols-3"
+                    className={`grid gap-4 grid-cols-1 ${
+                      teams.length <= 2 ? "sm:grid-cols-2"
+                        : teams.length <= 4 ? "sm:grid-cols-2"
+                        : "sm:grid-cols-2 xl:grid-cols-3"
                     }`}
                   >
                     {teams.map((team) => (
