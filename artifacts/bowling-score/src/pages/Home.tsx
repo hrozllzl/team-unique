@@ -247,19 +247,19 @@ export default function Home() {
           {adminMenuGroups.map((group) => (
             <div key={group.title}>
               <h3 className="text-base font-bold text-gray-900 mb-3">{group.title}</h3>
-              <div className={`grid gap-4 ${group.items.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+              <div className="flex flex-wrap gap-4">
                 {group.items.map((menu) => {
                   const Icon = menu.icon;
                   return (
                     <button
                       key={menu.path}
                       onClick={() => setLocation(menu.path)}
-                      className="flex flex-col items-center justify-center gap-2 aspect-square rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
+                      className="w-28 h-28 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-blue-500" strokeWidth={1.8} />
+                      <div className="w-14 h-14 rounded-xl bg-sky-100 flex items-center justify-center">
+                        <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
                       </div>
-                      <p className="text-xs font-semibold text-center leading-tight text-gray-900">{menu.label}</p>
+                      <p className="text-sm font-semibold text-center leading-tight text-gray-900">{menu.label}</p>
                     </button>
                   );
                 })}
