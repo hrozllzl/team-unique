@@ -381,7 +381,6 @@ function TeamColumn({
   const { setNodeRef } = useDroppable({ id: team.id });
   const itemIds = team.members.map((m) => `${team.id}::${m.member.id}`);
   const needsMore = perTeamTarget > 0 && team.members.length < perTeamTarget;
-  const lockedCount = team.members.filter((m) => lockedIds.has(m.member.id)).length;
 
   return (
     <div
@@ -390,14 +389,7 @@ function TeamColumn({
         ${isOver ? "border-primary/50 bg-primary/5" : "border-card-border bg-card"}`}
     >
       <div className="flex items-center justify-between pb-1 border-b border-card-border mb-1">
-        <span className="font-bold text-sm flex items-center gap-1.5">
-          {team.name}
-          {lockedCount > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
-              <Lock className="w-2.5 h-2.5" />{lockedCount}
-            </span>
-          )}
-        </span>
+        <span className="font-bold text-sm">{team.name}</span>
         <div className="flex gap-2 text-xs">
           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">평균 {calcTeamAvg(team)}점</span>
           <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">총 {calcTeamTotal(team)}점</span>
@@ -1244,27 +1236,9 @@ export default function TeamBuilder() {
                     disabled={memberScores.length < numTeams}
                     className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {hasBuilt && teams.length === Math.min(numTeams, memberScores.length) && lockedIds.size > 0 ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        잠금 유지하고 다시 배정 ({lockedIds.size}명 잠김)
-                      </>
-                    ) : (
-                      <>
-                        <Shuffle className="w-4 h-4" />
-                        팀 짜기
-                      </>
-                    )}
+                    <Shuffle className="w-4 h-4" />
+                    팀 짜기
                   </button>
-                  {hasBuilt && teams.length === Math.min(numTeams, memberScores.length) && lockedIds.size > 0 && (
-                    <button
-                      onClick={() => setLockedIds(new Set())}
-                      className="w-full mt-1.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-1"
-                    >
-                      <LockOpen className="w-3 h-3" />
-                      잠금 전체 해제
-                    </button>
-                  )}
                 </CardContent>
               </Card>
             </div>
