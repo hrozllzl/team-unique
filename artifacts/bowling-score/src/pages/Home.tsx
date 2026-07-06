@@ -247,14 +247,14 @@ export default function Home() {
           {adminMenuGroups.map((group) => (
             <div key={group.title}>
               <h3 className="text-base font-bold text-gray-900 mb-3">{group.title}</h3>
-              <div className="flex flex-wrap gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap">
                 {group.items.map((menu) => {
                   const Icon = menu.icon;
                   return (
                     <button
                       key={menu.path}
                       onClick={() => setLocation(menu.path)}
-                      className="w-[10.5rem] h-[10.5rem] flex flex-col items-center justify-center gap-3 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
+                      className="aspect-square sm:aspect-auto sm:w-[10.5rem] sm:h-[10.5rem] flex flex-col items-center justify-center gap-3 rounded-2xl bg-white border border-gray-200 active:scale-95 transition-all duration-100 cursor-pointer"
                     >
                       <div className="w-14 h-14 rounded-xl bg-sky-100 flex items-center justify-center">
                         <Icon className="w-7 h-7 text-blue-500" strokeWidth={1.8} />
